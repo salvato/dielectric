@@ -7,6 +7,11 @@ namespace Ui {
 class MainWindow;
 }
 
+
+QT_FORWARD_DECLARE_CLASS(LakeShore330)
+QT_FORWARD_DECLARE_CLASS(Plot2D)
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -14,6 +19,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+protected:
+    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
 
 private:
     Ui::MainWindow *ui;
