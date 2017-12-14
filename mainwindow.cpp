@@ -2,8 +2,11 @@
 #include "ui_mainwindow.h"
 #include "lakeshore330.h"
 #include "plot2d.h"
+#include "utility.h"
 
 #include <QSettings>
+#include <QDebug>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -35,7 +38,7 @@ MainWindow::closeEvent(QCloseEvent *event) {
 
 
 bool
-MainWindow::CheckInstruments() {
+MainWindow::checkInstruments() {
     SendIFC(gpibBoardID);
     if(isGpibError("MainWindow::CheckInstruments(): SendIFC Error"))
       return false;

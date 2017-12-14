@@ -8,6 +8,7 @@ class MainWindow;
 }
 
 
+QT_FORWARD_DECLARE_CLASS(Hp4284a)
 QT_FORWARD_DECLARE_CLASS(LakeShore330)
 QT_FORWARD_DECLARE_CLASS(Plot2D)
 
@@ -22,8 +23,11 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+    bool checkInstruments();
 
 private:
+    Hp4284a*  pHp4284a;
+    LakeShore330* pLakeShore;
     Ui::MainWindow *ui;
 };
 

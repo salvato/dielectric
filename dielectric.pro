@@ -69,7 +69,8 @@ contains(QMAKE_HOST.arch, "armv7l") || contains(QMAKE_HOST.arch, "armv6l"): {
 }
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    hp4284a.cpp
 SOURCES += lakeshore330.cpp
 SOURCES += axesdialog.cpp
 SOURCES += AxisFrame.cpp
@@ -80,7 +81,8 @@ SOURCES += plot2d.cpp
 SOURCES += utility.cpp
 SOURCES += mainwindow.cpp
 
-HEADERS += mainwindow.h
+HEADERS += mainwindow.h \
+    hp4284a.h
 HEADERS += lakeshore330.h
 HEADERS += axesdialog.h
 HEADERS += AxisFrame.h
