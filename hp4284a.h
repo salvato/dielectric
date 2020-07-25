@@ -7,7 +7,7 @@ class Hp4284a : public QObject
 {
     Q_OBJECT
 public:
-    explicit Hp4284a(int address, QObject *parent = nullptr);
+    explicit Hp4284a(int gpio, int address, QObject *parent = nullptr);
 
 signals:
 

@@ -5,6 +5,9 @@
 #include <QThread>
 
 
+#define TEST_NO_INTERFACE
+
+
 void
 myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
   QByteArray localMsg = msg.toLocal8Bit();
@@ -74,6 +77,7 @@ main(int argc, char *argv[]) {
             return 0;
     }
 #endif
+
     //w.updateUserInterface();
 
     QApplication::restoreOverrideCursor();

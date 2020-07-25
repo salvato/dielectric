@@ -5,9 +5,11 @@
 #include "utility.h"
 #include "hp4284a.h"
 
+
 #include <QSettings>
 #include <QDebug>
 #include <QMessageBox>
+
 
 MainWindow::MainWindow(int iBoard, QWidget *parent)
     : QMainWindow(parent)
@@ -45,7 +47,8 @@ MainWindow::checkInstruments() {
     SendIFC(gpibBoardID);
     if(isGpibError("MainWindow::CheckInstruments(): SendIFC Error"))
         return false;
-    // If addrlist contains only the constant NOADDR, the Universal Device Clear (DCL)
+    // If addrlist contains only the constant NOADDR,
+    // the Universal Device Clear (DCL)
     // message is sent to all the devices on the bus
     Addr4882_t addrlist;
     addrlist = NOADDR;

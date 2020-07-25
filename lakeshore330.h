@@ -29,7 +29,7 @@ class LakeShore330 : public QObject
   Q_OBJECT
 
 public:
-  explicit LakeShore330(int gpio, int address, QObject *parent = 0);
+  explicit LakeShore330(int gpio, int address, QObject *parent = nullptr);
   virtual ~LakeShore330();
   int      init();
   void     onGpibCallback(int ud, unsigned long ibsta, unsigned long iberr, long ibcntl);

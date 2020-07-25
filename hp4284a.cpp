@@ -9,8 +9,8 @@
 
 
 namespace hp4284a {
-int rearmMask;
 #if !defined(Q_OS_LINUX)
+static int rearmMask;
 int __stdcall
 myCallback(int LocalUd, unsigned long LocalIbsta, unsigned long LocalIberr, long LocalIbcntl, void* callbackData) {
     reinterpret_cast<Keithley236*>(callbackData)->onGpibCallback(LocalUd, LocalIbsta, LocalIberr, LocalIbcntl);
@@ -20,7 +20,7 @@ myCallback(int LocalUd, unsigned long LocalIbsta, unsigned long LocalIberr, long
 }
 
 
-Hp4284a::Hp4284a(int address, QObject *parent)
+Hp4284a::Hp4284a(int gpio, int address, QObject *parent)
     : QObject(parent)
     , hp4284aAddress(address)
     , hp4284a(-1)
