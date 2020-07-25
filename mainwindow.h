@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 
@@ -18,17 +17,18 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    explicit MainWindow(int iBoard, QWidget *parent = nullptr);
+    ~MainWindow() override;
+
+public:
+    bool checkInstruments();
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-    bool checkInstruments();
 
 private:
     Hp4284a*  pHp4284a;
     LakeShore330* pLakeShore;
     Ui::MainWindow *ui;
+    int gpibBoardID;
 };
-
-#endif // MAINWINDOW_H

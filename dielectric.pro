@@ -41,36 +41,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-windows {
-  # For National Instruments GPIB Boards
-  INCLUDEPATH += "C:/Program Files (x86)/National Instruments/Shared/ExternalCompilerSupport/C/include"
-}
+INCLUDEPATH += /usr/local/include
 
-contains(QMAKE_HOST.arch, "armv7l") || contains(QMAKE_HOST.arch, "armv6l"): {
-    message("Running on Raspberry")
-    INCLUDEPATH += /usr/local/include
-}
 
 # For National Instruments GPIB Boards
-windows {
-  message("Running on Windows")
-  LIBS += "C:/Program Files (x86)/National Instruments/Shared/ExternalCompilerSupport/C/lib32/msvc/gpib-32.obj"
-}
-linux {
-  message("Running on Linux")
-  LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
-}
-
-# To include libpigpiod_if2.so from /usr/local/lib
-contains(QMAKE_HOST.arch, "armv7l") || contains(QMAKE_HOST.arch, "armv6l"): {
-    LIBS += -L"/usr/local/lib" -lpigpiod_if2
-}
+LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
+LIBS += -L"/usr/local/lib" -lpigpiod_if2
 
 
-SOURCES += main.cpp \
-    hp4284a.cpp
+SOURCES += main.cpp
+SOURCES += hp4284a.cpp
 SOURCES += lakeshore330.cpp
 SOURCES += axesdialog.cpp
 SOURCES += AxisFrame.cpp
@@ -81,8 +63,8 @@ SOURCES += plot2d.cpp
 SOURCES += utility.cpp
 SOURCES += mainwindow.cpp
 
-HEADERS += mainwindow.h \
-    hp4284a.h
+HEADERS += mainwindow.h
+HEADERS += hp4284a.h
 HEADERS += lakeshore330.h
 HEADERS += axesdialog.h
 HEADERS += AxisFrame.h
