@@ -20,7 +20,7 @@ public:
     bool DisableQuery();
     bool QueryValues();
     bool EnableQuery();
-    void CloseCorrection();
+    bool CloseCorrection();
     void onGpibCallback(int LocalUd, unsigned long LocalIbsta, unsigned long LocalIberr, long LocalIbcntl);
     bool ShortCorr();
     bool OpenCorr();
@@ -55,6 +55,9 @@ public:
     static const int YTD  = 17;  // Sets function to Y-. (deg)
     static const int LPG  = 18;  // Sets function to Lp-G
     static const int YTR  = 19;  // Sets function to Y-. (rad)
+
+protected:
+    bool myInit();
 
 private:
   int hp4284aAddress;
