@@ -1,8 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "lakeshore330.h"
 #include "plot2d.h"
-#include "utility.h"
+#include "gpibdevice.h"
 #include "hp4284a.h"
 
 
@@ -45,24 +44,53 @@ MainWindow::closeEvent(QCloseEvent *event) {
 bool
 MainWindow::checkInstruments() {
     SendIFC(gpibBoardID);
-    if(isGpibError("MainWindow::CheckInstruments(): SendIFC Error"))
+    if(ThreadIbsta() & ERR) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle(QString(Q_FUNC_INFO));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setText(QString("SendIFC() Error"));
+        msgBox.setInformativeText(QString("Is the GPIB Interface connected ? "));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        int ret = msgBox.exec();
+        Q_UNUSED(ret)
         return false;
+    }
     // If addrlist contains only the constant NOADDR,
     // the Universal Device Clear (DCL)
     // message is sent to all the devices on the bus
     Addr4882_t addrlist;
     addrlist = NOADDR;
     DevClearList(gpibBoardID, &addrlist);
-    if(isGpibError("MainWindow::CheckInstruments() - DevClearList() failed. Are the Instruments Connected and Switced On ?"))
+    if(ThreadIbsta() & ERR) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle(QString(Q_FUNC_INFO));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setText(QString("DevClearList() failed"));
+        msgBox.setInformativeText(QString("Are the Instruments Connected and Switched On ?"));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        int ret = msgBox.exec();
+        Q_UNUSED(ret)
         return false;
-
+    }
     Addr4882_t padlist[31];
     Addr4882_t resultlist[31];
     for(Addr4882_t i=0; i<30; i++) padlist[i] = i+1;
     padlist[30] = NOADDR;
     FindLstn(gpibBoardID, padlist, resultlist, 30);
-    if(isGpibError("MainWindow::CheckInstruments() - FindLstn() failed. Are the Instruments Connected and Switced On ?"))
+    if(ThreadIbsta() & ERR) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle(QString(Q_FUNC_INFO));
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.setText(QString("FindLstn() failed"));
+        msgBox.setInformativeText(QString("Are the Instruments Connected and Switched On ?"));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setDefaultButton(QMessageBox::Ok);
+        int ret = msgBox.exec();
+        Q_UNUSED(ret)
         return false;
+    }
     int nDevices = ThreadIbcnt();
     qInfo() << QString("Found %1 Instruments connected to the GPIB Bus").arg(nDevices);
 
@@ -73,40 +101,46 @@ MainWindow::checkInstruments() {
     for(int i=0; i<nDevices; i++) {
         sCommand = "*IDN?";
         Send(gpibBoardID, resultlist[i], sCommand.toUtf8().constData(), sCommand.length(), DABend);
-        if(isGpibError("MainWindow::CheckInstruments() - *IDN? Failed"))
+        if(ThreadIbsta() & ERR) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(QString(Q_FUNC_INFO));
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.setText(QString("*IDN? failed"));
+            msgBox.setInformativeText(QString("Are the Instruments Connected and Switched On ?"));
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            int ret = msgBox.exec();
+            Q_UNUSED(ret)
             return false;
+        }
         Receive(gpibBoardID, resultlist[i], readBuf, 256, STOPend);
-        if(isGpibError("MainWindow::CheckInstruments() - Receive() Failed"))
+        if(ThreadIbsta() & ERR) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle(QString(Q_FUNC_INFO));
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.setText(QString("Receive() failed"));
+            msgBox.setInformativeText(QString("Are the Instruments Connected and Switched On ?"));
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            int ret = msgBox.exec();
+            Q_UNUSED(ret)
             return false;
+        }
         readBuf[ThreadIbcnt()] = '\0';
         sInstrumentID = QString(readBuf);
         qDebug() << QString("Address= %1 - InstrumentID= %2")
                     .arg(resultlist[i])
                     .arg(sInstrumentID);
-        if(sInstrumentID.contains("MODEL330", Qt::CaseInsensitive)) {
-            if(pLakeShore == nullptr)
-                pLakeShore = new LakeShore330(gpibBoardID, resultlist[i], this);
-        }
-        else if(sInstrumentID.contains("4284A", Qt::CaseInsensitive)) {
-            if(pHp4284a == Q_NULLPTR) {
+        if(sInstrumentID.contains("4284A", Qt::CaseInsensitive)) {
+            if(pHp4284a == nullptr) {
                 pHp4284a = new Hp4284a(gpibBoardID, resultlist[i], this);
             }
         }
     }
-    if(pHp4284a == Q_NULLPTR) {
+    if(pHp4284a == nullptr) {
         int iAnswer = QMessageBox::warning(this,
                                            "Warning",
                                            "HP4284A LCR Meter Not Connected",
-                                           QMessageBox::Abort|QMessageBox::Ignore,
-                                           QMessageBox::Abort);
-        if(iAnswer == QMessageBox::Abort)
-            return false;
-    }
-
-    if(pLakeShore == Q_NULLPTR) {
-        int iAnswer = QMessageBox::warning(this,
-                                           "Warning",
-                                           "Lake Shore Not Connected",
                                            QMessageBox::Abort|QMessageBox::Ignore,
                                            QMessageBox::Abort);
         if(iAnswer == QMessageBox::Abort)

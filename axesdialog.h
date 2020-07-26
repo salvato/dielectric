@@ -16,33 +16,43 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
-#ifndef AXESDIALOG_H
-#define AXESDIALOG_H
+#pragma once
 
 #include <QDialog>
+
 #include "AxisLimits.h"
 
-namespace Ui {
-class AxesDialog;
-}
+
+QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
+
 
 class AxesDialog : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit AxesDialog(QWidget *parent = 0);
-  ~AxesDialog();
-  void initDialog(CAxisLimits AxisLimits);
+    explicit AxesDialog(QWidget *parent = Q_NULLPTR);
+    ~AxesDialog();
+    void initDialog(AxisLimits AxisLimits);
 
 private:
-  Ui::AxesDialog *ui;
+    QLineEdit        *pEditXMin;
+    QLineEdit        *pEditXMax;
+    QLineEdit        *pEditYMin;
+    QLineEdit        *pEditYMax;
+    QCheckBox        *pAutoX;
+    QCheckBox        *pAutoY;
+    QCheckBox        *pLogX;
+    QCheckBox        *pLogY;
+    QDialogButtonBox *pButtonBox;
 
 public:
-  CAxisLimits newLimits;
+    AxisLimits newLimits;
+
 private slots:
-  void on_buttonBox_accepted();
-  void on_buttonBox_rejected();
+    void onButtonBoxAccepted();
+    void onButtonBoxRejected();
 };
 
-#endif // AXESDIALOG_H

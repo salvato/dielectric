@@ -14,7 +14,7 @@ bool
 GpibDevice::isGpibError(QString sErrorString) {
     if(ThreadIbsta() & ERR) {
         QString sError = ErrMsg(ThreadIbsta(), ThreadIberr(), ThreadIbcnt());
-        emit sendMessage(sErrorString + QString("\n") + sError);
+        emit aMessage(sErrorString + QString("\n") + sError);
         return true;
     }
     return false;

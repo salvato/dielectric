@@ -15,7 +15,8 @@ public:
     virtual ~Hp4284a();
 
 public:
-    bool GetFreq(double *f);
+    int  init();
+    double GetFreq();
     bool SetMode(int Mode);
     bool DisableQuery();
     bool QueryValues();
@@ -24,17 +25,17 @@ public:
     void onGpibCallback(int LocalUd, unsigned long LocalIbsta, unsigned long LocalIberr, long LocalIbcntl);
     bool ShortCorr();
     bool OpenCorr();
-    void GetValues(char* Results, int maxchars);
+    QString GetValues();
     bool SetFreq(double Frequency);
 
 signals:
+    void correctionDone();
+    void measurementComplete();
 
 public slots:
     void checkNotify();
 
 public:
-    int      init();
-
     static const int CPD  =  0;  // Sets function to Cp-D
     static const int LPRP =  1; // Sets function to Lp-Rp
     static const int CPQ  =  2;  // Sets function to Cp-Q
@@ -60,8 +61,6 @@ protected:
     bool myInit();
 
 private:
-  int hp4284aAddress;
-  int hp4284a;
 };
 
 #endif // HP4284A_H

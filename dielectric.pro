@@ -52,29 +52,33 @@ LIBS += -L"/usr/local/lib" -lpigpiod_if2
 
 
 SOURCES += main.cpp \
-    gpibdevice.cpp
+    gpibdevice.cpp \
+    datastream2d.cpp \
+    plotpropertiesdlg.cpp
 SOURCES += hp4284a.cpp
-SOURCES += lakeshore330.cpp
+SOURCES +=
 SOURCES += axesdialog.cpp
 SOURCES += AxisFrame.cpp
 SOURCES += AxisLimits.cpp
-SOURCES += cdatastream2d.cpp
+SOURCES +=
 SOURCES += DataSetProperties.cpp
 SOURCES += plot2d.cpp
-SOURCES += utility.cpp
+SOURCES +=
 SOURCES += mainwindow.cpp
 
 HEADERS += mainwindow.h \
-    gpibdevice.h
+    gpibdevice.h \
+    datastream2d.h \
+    plotpropertiesdlg.h
 HEADERS += hp4284a.h
-HEADERS += lakeshore330.h
+HEADERS +=
 HEADERS += axesdialog.h
 HEADERS += AxisFrame.h
 HEADERS += AxisLimits.h
-HEADERS += cdatastream2d.h
+HEADERS +=
 HEADERS += DataSetProperties.h
 HEADERS += plot2d.h
-HEADERS += utility.h
+HEADERS +=
 
 FORMS += mainwindow.ui
-FORMS += axesdialog.ui
+FORMS +=

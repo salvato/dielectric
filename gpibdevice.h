@@ -21,13 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtGlobal>
 #include <QObject>
 #include <QTimer>
-
-
-#if defined(Q_OS_LINUX)
 #include <gpib/ib.h>
-#else
-#include <ni4882.h>
-#endif
 
 
 class GpibDevice : public QObject
@@ -45,7 +39,8 @@ protected:
     bool    isGpibError(QString sErrorString);
 
 signals:
-    void    sendMessage(QString sMessage);
+    void    aMessage(QString sMessage);
+    void    mustExit();
 
 public slots:
     void checkNotify();
