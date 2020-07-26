@@ -51,7 +51,8 @@ LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
 LIBS += -L"/usr/local/lib" -lpigpiod_if2
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    gpibdevice.cpp
 SOURCES += hp4284a.cpp
 SOURCES += lakeshore330.cpp
 SOURCES += axesdialog.cpp
@@ -63,7 +64,8 @@ SOURCES += plot2d.cpp
 SOURCES += utility.cpp
 SOURCES += mainwindow.cpp
 
-HEADERS += mainwindow.h
+HEADERS += mainwindow.h \
+    gpibdevice.h
 HEADERS += hp4284a.h
 HEADERS += lakeshore330.h
 HEADERS += axesdialog.h
