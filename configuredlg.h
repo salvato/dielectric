@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <QObject>
 #include <QDialog>
 #include <QSettings>
 #include <QLabel>
@@ -30,32 +31,26 @@
 #include <QPlainTextEdit>
 #include <QComboBox>
 #include <QTextEdit>
+#include <QDialogButtonBox>
 
-QT_FORWARD_DECLARE_CLASS(Hp4284a)
-QT_FORWARD_DECLARE_CLASS(Plot2D)
+
 QT_FORWARD_DECLARE_CLASS(QGridLayout)
 
 
-class MainWindow : public QDialog
+class ConfigureDlg : public QDialog
 {
     Q_OBJECT
-
 public:
-    explicit MainWindow(int iBoard, QWidget *parent = nullptr);
-    ~MainWindow() override;
+    ConfigureDlg(QWidget *parent);
+    int exec();
 
-public:
-    bool checkInstruments();
+signals:
 
 public slots:
-    void onCorrectionDone();
+    void onCancel();
+    void onOk();
 
 protected:
-    void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
-    bool saveLoadCorrectionFile();
-    bool saveOpenCorrectionFile();
-    bool saveShortCorrectionFile();
-    void initPlots();
     void initLayout();
     void saveSettings();
     void getSettings();
@@ -63,18 +58,17 @@ protected:
     void setToolTips();
 
 private:
-    Hp4284a*        pHp4284a;
-    Plot2D*         pPlotE1_Om;
-    Plot2D*         pPlotE2_Om;
-    Plot2D*         pPlotTD_Om;
-    int             gpibBoardID;
-    bool	        bPlotE1_Om;
-    bool	        bPlotE2_Om;
-    bool	        bPlotTD_Om;
-    QSettings       settings;
-    QGridLayout*    pMainLayout;
-    QPushButton     configureButton;
-    QString         sNormalStyle;
-    QString         sErrorStyle;
-    bool            bCanClose;
+    QSettings        settings;
+    QGridLayout*     pMainLayout;
+
+    QPushButton      okButton;
+    QPushButton      cancelButton;
+
+
+    QDialogButtonBox* pButtonBox;
+
+    QString sNormalStyle;
+    QString sErrorStyle;
+    bool bCanClose;
 };
+

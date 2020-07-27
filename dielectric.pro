@@ -54,7 +54,8 @@ LIBS += -L"/usr/local/lib" -lpigpiod_if2
 SOURCES += main.cpp \
     gpibdevice.cpp \
     datastream2d.cpp \
-    plotpropertiesdlg.cpp
+    plotpropertiesdlg.cpp \
+    configuredlg.cpp
 SOURCES += hp4284a.cpp
 SOURCES +=
 SOURCES += axesdialog.cpp
@@ -69,7 +70,8 @@ SOURCES += mainwindow.cpp
 HEADERS += mainwindow.h \
     gpibdevice.h \
     datastream2d.h \
-    plotpropertiesdlg.h
+    plotpropertiesdlg.h \
+    configuredlg.h
 HEADERS += hp4284a.h
 HEADERS +=
 HEADERS += axesdialog.h
@@ -80,5 +82,5 @@ HEADERS += DataSetProperties.h
 HEADERS += plot2d.h
 HEADERS +=
 
-FORMS += mainwindow.ui
+FORMS +=
 FORMS +=
