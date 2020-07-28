@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "plot2d.h"
 #include "gpibdevice.h"
 #include "hp4284a.h"
@@ -61,9 +60,7 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     sLogDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
     if(!sLogDir.endsWith(QString("/"))) sLogDir+= QString("/");
     sLogFileName = sLogDir+sLogFileName;
-#ifndef MY_DEBUG
     prepareLogFile();
-#endif
 
     getSettings();
     initLayout();
