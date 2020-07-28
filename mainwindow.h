@@ -31,9 +31,12 @@
 #include <QComboBox>
 #include <QTextEdit>
 
+
+QT_FORWARD_DECLARE_CLASS(QFile)
 QT_FORWARD_DECLARE_CLASS(Hp4284a)
 QT_FORWARD_DECLARE_CLASS(Plot2D)
 QT_FORWARD_DECLARE_CLASS(QGridLayout)
+QT_FORWARD_DECLARE_CLASS(ConfigureDlg)
 
 
 class MainWindow : public QDialog
@@ -46,8 +49,11 @@ public:
 
 public:
     bool checkInstruments();
+    void updateUserInterface();
+
 
 public slots:
+    void onConfigure();
     void onCorrectionDone();
 
 protected:
@@ -61,20 +67,27 @@ protected:
     void getSettings();
     void connectSignals();
     void setToolTips();
+    bool prepareLogFile();
+    void logMessage(QString sMessage);
 
 private:
-    Hp4284a*        pHp4284a;
-    Plot2D*         pPlotE1_Om;
-    Plot2D*         pPlotE2_Om;
-    Plot2D*         pPlotTD_Om;
-    int             gpibBoardID;
-    bool	        bPlotE1_Om;
-    bool	        bPlotE2_Om;
-    bool	        bPlotTD_Om;
-    QSettings       settings;
-    QGridLayout*    pMainLayout;
-    QPushButton     configureButton;
-    QString         sNormalStyle;
-    QString         sErrorStyle;
-    bool            bCanClose;
+    QGridLayout*     pMainLayout;
+    QFile*           pOutputFile;
+    QFile*           pLogFile;
+    Hp4284a*         pHp4284a;
+    Plot2D*          pPlotE1_Om;
+    Plot2D*          pPlotE2_Om;
+    Plot2D*          pPlotTD_Om;
+    ConfigureDlg*    pConfigureDlg;
+    int              gpibBoardID;
+    bool	         bPlotE1_Om;
+    bool	         bPlotE2_Om;
+    bool	         bPlotTD_Om;
+    bool             bCanClose;
+    QSettings        settings;
+    QPushButton      configureButton;
+    QString          sNormalStyle;
+    QString          sErrorStyle;
+    QString          sLogFileName;
+    QString          sLogDir;
 };

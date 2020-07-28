@@ -21,54 +21,35 @@
 // SOFTWARE.
 
 #include "configuredlg.h"
+#include "filetab.h"
 
-#include <QGridLayout>
+#include <QTabWidget>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
 #include <QDebug>
 #include <QMessageBox>
 
 
-ConfigureDlg::ConfigureDlg(QWidget *parent)
+ConfigureDlg::ConfigureDlg(int iConfiguration, QWidget *parent)
     : QDialog(parent)
-{ 
-    getSettings();
-    initLayout();
-    setToolTips();
-    connectSignals();
-    bCanClose = true;
-}
-
-
-int
-ConfigureDlg::exec() {
-    getSettings();
-    return QDialog::exec();
-}
-
-
-
-void
-ConfigureDlg::getSettings() {
-    restoreGeometry(settings.value(QString("Configuration Dialog")).toByteArray());
-}
-
-
-void
-ConfigureDlg::saveSettings() {
-    settings.setValue(QString("Configuration Dialog"), saveGeometry());
-}
-
-
-void
-ConfigureDlg::initLayout() {
-    // Create the Dialog Layout
-    QGridLayout* pLayout = new QGridLayout();
-
+    , pTabFile(Q_NULLPTR)
+    , pParent(parent)
+    , configurationType(iConfiguration)
+{
+    pTabWidget   = new QTabWidget();
+    pTabFile     = new FileTab(configurationType, this);
+    iFileIndex   = pTabWidget->addTab(pTabFile,  tr("Out File"));
 
     pButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                       QDialogButtonBox::Cancel);
-    pLayout->addWidget(pButtonBox, 7, 0, 1, 4);
-    // Set the Layout
-    setLayout(pLayout);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget(pTabWidget);
+    mainLayout->addWidget(pButtonBox);
+    setLayout(mainLayout);
+
+    connectSignals();
+    setToolTips();
 }
 
 
@@ -85,21 +66,23 @@ ConfigureDlg::connectSignals() {
 
 void
 ConfigureDlg::onCancel() {
-    getSettings();
+    if(pTabFile)   pTabFile->restoreSettings();
     reject();
 }
 
 
 void
 ConfigureDlg::onOk() {
-    if(!bCanClose)
-        return;
-    saveSettings();
-    accept();
+    if(pTabFile->checkFileName()) {
+        if(pTabFile)   pTabFile->saveSettings();
+        accept();
+    }
+    pTabWidget->setCurrentIndex(iFileIndex);
 }
 
 
 void
 ConfigureDlg::setToolTips() {
+    if(pTabFile) pTabWidget->setTabToolTip(iFileIndex,   QString("Output File configuration"));
 }
 

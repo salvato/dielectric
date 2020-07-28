@@ -4,7 +4,7 @@
 #include <QFileInfo>
 
 
-#define TEST_NO_INTERFACE
+//#define TEST_NO_INTERFACE
 
 
 void
@@ -43,7 +43,6 @@ main(int argc, char *argv[]) {
     QCoreApplication::setApplicationName("Dielectric");
     QCoreApplication::setApplicationVersion("1.0.0");
 
-
 #ifndef TEST_NO_INTERFACE
     QString sGpibInterface = QString("/dev/gpib%1").arg(gpibBoardID);
     QFileInfo checkFile(sGpibInterface);
@@ -77,7 +76,7 @@ main(int argc, char *argv[]) {
     }
 #endif
 
-    //w.updateUserInterface();
+    w.updateUserInterface();
 
     QApplication::restoreOverrideCursor();
     return a.exec();

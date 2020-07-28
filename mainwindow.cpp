@@ -25,19 +25,27 @@
 #include "plot2d.h"
 #include "gpibdevice.h"
 #include "hp4284a.h"
+#include "configuredlg.h"
 
 
 #include <QGridLayout>
 #include <QSettings>
 #include <QDebug>
 #include <QMessageBox>
+#include <QStandardPaths>
+#include <QDateTime>
+#include <QDir>
+#include <QFileInfo>
 
 
 MainWindow::MainWindow(int iBoard, QWidget *parent)
     : QDialog(parent)
+    , pOutputFile(nullptr)
+    , pLogFile(nullptr)
     , pPlotE1_Om(nullptr)
     , pPlotE2_Om(nullptr)
     , pPlotTD_Om(nullptr)
+    , pConfigureDlg(nullptr)
     , gpibBoardID(iBoard)
 {
     // Init internal variables
@@ -48,26 +56,95 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     setSizeGripEnabled(false);// To remove the resize-handle in the lower right corner
     setFixedSize(size());// To make the size of the window fixed
 
+    // Prepare message logging
+    sLogFileName = QString("dieletricLog.txt");
+    sLogDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+    if(!sLogDir.endsWith(QString("/"))) sLogDir+= QString("/");
+    sLogFileName = sLogDir+sLogFileName;
+#ifndef MY_DEBUG
+    prepareLogFile();
+#endif
+
     getSettings();
     initLayout();
     setToolTips();
+    pConfigureDlg = new ConfigureDlg(0, this);
     connectSignals();
     bCanClose = true;
 }
 
 
 MainWindow::~MainWindow() {
-    if(pPlotE1_Om) delete pPlotE1_Om;
-    if(pPlotE2_Om) delete pPlotE2_Om;
-    if(pPlotTD_Om) delete pPlotTD_Om;
+    if(pPlotE1_Om)    delete pPlotE1_Om;
+    if(pPlotE2_Om)    delete pPlotE2_Om;
+    if(pPlotTD_Om)    delete pPlotTD_Om;
+    if(pConfigureDlg) delete pConfigureDlg;
+    if(pOutputFile)   delete pOutputFile;
+    if(pLogFile)      delete pLogFile;
 }
 
 
 void
 MainWindow::closeEvent(QCloseEvent *event) {
     Q_UNUSED(event)
+    //stopTimers();
     QSettings settings;
     settings.setValue("mainWindowGeometry", saveGeometry());
+
+    if(pLogFile) {
+        if(pLogFile->isOpen()) {
+            pLogFile->flush();
+        }
+        pLogFile->deleteLater();
+        pLogFile = nullptr;
+    }
+}
+
+
+bool
+MainWindow::prepareLogFile() {
+    // Rotate 5 previous logs, removing the oldest, to avoid data loss
+    QFileInfo checkFile(sLogFileName);
+    if(checkFile.exists() && checkFile.isFile()) {
+        QDir renamed;
+        renamed.remove(sLogFileName+QString("_4.txt"));
+        for(int i=4; i>0; i--) {
+            renamed.rename(sLogFileName+QString("_%1.txt").arg(i-1),
+                           sLogFileName+QString("_%1.txt").arg(i));
+        }
+        renamed.rename(sLogFileName,
+                       sLogFileName+QString("_0.txt"));
+    }
+    // Open the new log file
+    pLogFile = new QFile(sLogFileName);
+    if (!pLogFile->open(QIODevice::WriteOnly)) {
+        QMessageBox::information(Q_NULLPTR, "Conductivity",
+                                 QString("Unable to open file %1: %2.")
+                                 .arg(sLogFileName).arg(pLogFile->errorString()));
+        delete pLogFile;
+        pLogFile = Q_NULLPTR;
+    }
+    return true;
+}
+
+
+void
+MainWindow::logMessage(QString sMessage) {
+    QDateTime dateTime;
+    QString sDebugMessage = dateTime.currentDateTime().toString() +
+                            QString(" - ") +
+                            sMessage;
+    if(pLogFile) {
+        if(pLogFile->isOpen()) {
+            pLogFile->write(sDebugMessage.toUtf8().data());
+            pLogFile->write("\n");
+            pLogFile->flush();
+        }
+        else
+            qDebug() << sDebugMessage;
+    }
+    else
+        qDebug() << sDebugMessage;
 }
 
 
@@ -100,6 +177,8 @@ MainWindow::setToolTips() {
 
 void
 MainWindow::connectSignals() {
+    connect(&configureButton, SIGNAL(clicked()),
+            this, SLOT(onConfigure()));
 }
 
 
@@ -213,10 +292,16 @@ MainWindow::checkInstruments() {
 
 
 void
+MainWindow::updateUserInterface() {
+
+}
+
+
+void
 MainWindow::initPlots() {
-    pPlotE1_Om    = new Plot2D(this, "E'(F)");
-    pPlotE2_Om    = new Plot2D(this, "E\"(F)");
-    pPlotTD_Om  = new Plot2D(this, "Tan_Delta(F)");
+    pPlotE1_Om = new Plot2D(this, "E'(F)");
+    pPlotE2_Om = new Plot2D(this, "E\"(F)");
+    pPlotTD_Om = new Plot2D(this, "Tan_Delta(F)");
 
     pPlotE1_Om->SetLimits(1.0, 10.0, 1.0, 10.0, true, true, true, false);
     pPlotE2_Om->SetLimits(1.0, 10.0, 1.0, 10.0, true, true, true, false);
@@ -240,6 +325,12 @@ MainWindow::initPlots() {
         pPlotTD_Om->show();
     else
         pPlotTD_Om->hide();
+}
+
+
+void
+MainWindow::onConfigure() {
+    pConfigureDlg->exec();
 }
 
 

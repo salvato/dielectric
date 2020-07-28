@@ -55,7 +55,8 @@ SOURCES += main.cpp \
     gpibdevice.cpp \
     datastream2d.cpp \
     plotpropertiesdlg.cpp \
-    configuredlg.cpp
+    configuredlg.cpp \
+    filetab.cpp
 SOURCES += hp4284a.cpp
 SOURCES +=
 SOURCES += axesdialog.cpp
@@ -71,7 +72,8 @@ HEADERS += mainwindow.h \
     gpibdevice.h \
     datastream2d.h \
     plotpropertiesdlg.h \
-    configuredlg.h
+    configuredlg.h \
+    filetab.h
 HEADERS += hp4284a.h
 HEADERS +=
 HEADERS += axesdialog.h

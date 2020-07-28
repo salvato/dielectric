@@ -32,6 +32,7 @@
 #include <QComboBox>
 #include <QTextEdit>
 #include <QDialogButtonBox>
+#include "filetab.h"
 
 
 QT_FORWARD_DECLARE_CLASS(QGridLayout)
@@ -41,8 +42,11 @@ class ConfigureDlg : public QDialog
 {
     Q_OBJECT
 public:
-    ConfigureDlg(QWidget *parent);
-    int exec();
+    ConfigureDlg(int iConfiguration, QWidget *parent);
+
+public:
+//    hp4284Tab* pTab4284;
+    FileTab*   pTabFile;
 
 signals:
 
@@ -51,24 +55,16 @@ public slots:
     void onOk();
 
 protected:
-    void initLayout();
-    void saveSettings();
-    void getSettings();
     void connectSignals();
     void setToolTips();
 
 private:
-    QSettings        settings;
-    QGridLayout*     pMainLayout;
-
-    QPushButton      okButton;
-    QPushButton      cancelButton;
-
-
+    QWidget*          pParent;
+    QTabWidget*       pTabWidget;
     QDialogButtonBox* pButtonBox;
 
-    QString sNormalStyle;
-    QString sErrorStyle;
-    bool bCanClose;
+    int iBridgeIndex;
+    int iFileIndex;
+    int configurationType;
 };
 
