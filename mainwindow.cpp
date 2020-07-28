@@ -49,9 +49,9 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , gpibBoardID(iBoard)
 {
     // Init internal variables
-    bPlotE1_Om = false;
-    bPlotE2_Om = false;
-    bPlotTD_Om = false;
+    bPlotE1_Om = true;
+    bPlotE2_Om = true;
+    bPlotTD_Om = true;
 
     setSizeGripEnabled(false);// To remove the resize-handle in the lower right corner
     setFixedSize(size());// To make the size of the window fixed
@@ -70,17 +70,12 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     setToolTips();
     pConfigureDlg = new ConfigureDlg(0, this);
     connectSignals();
+    initPlots();
     bCanClose = true;
 }
 
 
 MainWindow::~MainWindow() {
-    if(pPlotE1_Om)    delete pPlotE1_Om;
-    if(pPlotE2_Om)    delete pPlotE2_Om;
-    if(pPlotTD_Om)    delete pPlotTD_Om;
-    if(pConfigureDlg) delete pConfigureDlg;
-    if(pOutputFile)   delete pOutputFile;
-    if(pLogFile)      delete pLogFile;
 }
 
 
@@ -90,6 +85,12 @@ MainWindow::closeEvent(QCloseEvent *event) {
     //stopTimers();
     QSettings settings;
     settings.setValue("mainWindowGeometry", saveGeometry());
+
+    if(pPlotE1_Om)    delete pPlotE1_Om;
+    if(pPlotE2_Om)    delete pPlotE2_Om;
+    if(pPlotTD_Om)    delete pPlotTD_Om;
+    if(pConfigureDlg) delete pConfigureDlg;
+    if(pOutputFile)   delete pOutputFile;
 
     if(pLogFile) {
         if(pLogFile->isOpen()) {
@@ -132,8 +133,8 @@ void
 MainWindow::logMessage(QString sMessage) {
     QDateTime dateTime;
     QString sDebugMessage = dateTime.currentDateTime().toString() +
-                            QString(" - ") +
-                            sMessage;
+            QString(" - ") +
+            sMessage;
     if(pLogFile) {
         if(pLogFile->isOpen()) {
             pLogFile->write(sDebugMessage.toUtf8().data());
@@ -164,6 +165,7 @@ void
 MainWindow::initLayout() {
     // Create the Dialog Layout
     QGridLayout* pLayout = new QGridLayout();
+    startMeasureButton.setText("Start Measure");
     configureButton.setText("Configure");
     pLayout->addWidget(&configureButton, 0, 0, 1, 1);
     setLayout(pLayout);
@@ -177,6 +179,8 @@ MainWindow::setToolTips() {
 
 void
 MainWindow::connectSignals() {
+    connect(&startMeasureButton, SIGNAL(clicked()),
+            this, SLOT(onStartMeasure()));
     connect(&configureButton, SIGNAL(clicked()),
             this, SLOT(onConfigure()));
 }
@@ -299,9 +303,9 @@ MainWindow::updateUserInterface() {
 
 void
 MainWindow::initPlots() {
-    pPlotE1_Om = new Plot2D(this, "E'(F)");
-    pPlotE2_Om = new Plot2D(this, "E\"(F)");
-    pPlotTD_Om = new Plot2D(this, "Tan_Delta(F)");
+    pPlotE1_Om = new Plot2D(nullptr, "E'(F)");
+    pPlotE2_Om = new Plot2D(nullptr, "E\"(F)");
+    pPlotTD_Om = new Plot2D(nullptr, "Tan_Delta(F)");
 
     pPlotE1_Om->SetLimits(1.0, 10.0, 1.0, 10.0, true, true, true, false);
     pPlotE2_Om->SetLimits(1.0, 10.0, 1.0, 10.0, true, true, true, false);
@@ -335,8 +339,50 @@ MainWindow::onConfigure() {
 
 
 void
+MainWindow::onStartMeasure() {
+    QString sTitle;
+    sTitle = startMeasureButton.text();
+    if(sTitle == "Stop") {
+        endMeasure();
+    } else {
+        nFreq          = initFreq();
+        pHp4284a->setMode(CHp4284a::CPD);
+        pHp4284a->setFreq(getFirstFreq());
+        pPlotE1_Om->ClearPlot();
+        pPlotE2_Om->ClearPlot();
+        pPlotTD_Om->ClearPlot();
+
+        pPlotE1_Om->NewDataSet(0, 1, QColor(0xFF, 0, 0), Plot2D::iline, "E1(F)");
+        pPlotE1_Om->SetShowDataSet(1, true);
+
+        pPlotE2_Om->NewDataSet(1, 1, QColor(0xFF, 0, 0), Plot2D::iline, "E2(F)");
+        pPlotE2_Om->SetShowDataSet(1, true);
+
+        pPlotTD_Om->NewDataSet(1, 1, QColor(0xFF, 0, 0), Plot2D::iline, "TanD(F)");
+        pPlotTD_Om->SetShowDataSet(1, true);
+
+        startMeasureButton.setText("Stop");
+        configureButton.setEnabled(false);
+
+        //sTitle = QString("In Attesa di Raggiungere %.1f K\r\n", TemperaturaDaRaggiungere);
+        //pMsg->AddText(sTitle);
+        //iStatus = STATUS_MEASURING;
+    }
+}
+
+
+void
+MainWindow::endMeasure() {
+    startMeasureButton.setText("Start Measure");
+    configureButton.setEnabled(true);
+    //pMsg->AddText("Misura Terminata\r\n");
+    //iStatus = STATUS_IDLE;
+}
+
+
+void
 MainWindow::onCorrectionDone() {
-/*
+    /*
     pHp4284a->CloseCorrection();
     bSetup.EnableWindow(true);
     bFileSave.EnableWindow(bDataAvailable);

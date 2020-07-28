@@ -54,6 +54,7 @@ public:
 
 public slots:
     void onConfigure();
+    void onStartMeasure();
     void onCorrectionDone();
 
 protected:
@@ -69,6 +70,7 @@ protected:
     void setToolTips();
     bool prepareLogFile();
     void logMessage(QString sMessage);
+    void endMeasure();
 
 private:
     QGridLayout*     pMainLayout;
@@ -86,6 +88,7 @@ private:
     bool             bCanClose;
     QSettings        settings;
     QPushButton      configureButton;
+    QPushButton      startMeasureButton;
     QString          sNormalStyle;
     QString          sErrorStyle;
     QString          sLogFileName;
