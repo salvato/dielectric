@@ -128,7 +128,7 @@ Hp4284a::myInit() {
 
 
 bool
-Hp4284a::SetFreq(double Frequency) {
+Hp4284a::setFrequency(double Frequency) {
     sCommand =QString("FREQ %1 HZ\r\n").arg(Frequency);
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -139,7 +139,7 @@ Hp4284a::SetFreq(double Frequency) {
 
 
 QString
-Hp4284a::GetValues() {
+Hp4284a::getValues() {
     sCommand = QString("FETCH?\r\n");
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -154,7 +154,7 @@ Hp4284a::GetValues() {
 
 
 bool
-Hp4284a::OpenCorr() {
+Hp4284a::openCorrection() {
     sCommand = "*CLS\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -180,7 +180,7 @@ Hp4284a::OpenCorr() {
 
 
 bool
-Hp4284a::ShortCorr() {
+Hp4284a::shortCorrection() {
     sCommand = "*CLS\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -206,7 +206,7 @@ Hp4284a::ShortCorr() {
 
 
 bool
-Hp4284a::CloseCorrection() {
+Hp4284a::closeCorrection() {
     sCommand = "STAT:OPER:ENAB 0\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -227,7 +227,7 @@ Hp4284a::CloseCorrection() {
 
 
 bool
-Hp4284a::EnableQuery() {
+Hp4284a::enableQuery() {
     sCommand = "*CLS\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -258,7 +258,7 @@ Hp4284a::EnableQuery() {
 
 
 bool
-Hp4284a::QueryValues() {
+Hp4284a::queryValues() {
     sCommand = "TRIG\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -269,7 +269,7 @@ Hp4284a::QueryValues() {
 
 
 bool
-Hp4284a::DisableQuery() {
+Hp4284a::disableQuery() {
     sCommand = "STAT:OPER:ENAB 0\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -300,7 +300,7 @@ Hp4284a::DisableQuery() {
 
 
 bool
-Hp4284a::SetMode(int Mode) {
+Hp4284a::setMode(int Mode) {
     if((Mode < CPD) || (Mode > YTR)) return false;
     sCommand  = "FUNC:IMP:TYPE ";
     switch (Mode) {
@@ -375,7 +375,7 @@ Hp4284a::SetMode(int Mode) {
 
 
 double
-Hp4284a::GetFreq() {
+Hp4284a::getFrequency() {
     sCommand = "FREQ?\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {

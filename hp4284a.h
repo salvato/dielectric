@@ -15,18 +15,18 @@ public:
     virtual ~Hp4284a();
 
 public:
-    int  init();
-    double GetFreq();
-    bool SetMode(int Mode);
-    bool DisableQuery();
-    bool QueryValues();
-    bool EnableQuery();
-    bool CloseCorrection();
-    void onGpibCallback(int LocalUd, unsigned long LocalIbsta, unsigned long LocalIberr, long LocalIbcntl);
-    bool ShortCorr();
-    bool OpenCorr();
-    QString GetValues();
-    bool SetFreq(double Frequency);
+    int     init();
+    double  getFrequency();
+    bool    setMode(int Mode);
+    bool    disableQuery();
+    bool    queryValues();
+    bool    enableQuery();
+    bool    closeCorrection();
+    void    onGpibCallback(int LocalUd, unsigned long LocalIbsta, unsigned long LocalIberr, long LocalIbcntl);
+    bool    shortCorrection();
+    bool    openCorrection();
+    QString getValues();
+    bool    setFrequency(double Frequency);
 
 signals:
     void correctionDone();

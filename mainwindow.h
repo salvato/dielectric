@@ -71,6 +71,7 @@ protected:
     bool prepareLogFile();
     void logMessage(QString sMessage);
     void endMeasure();
+    uint initFrequencies();
 
 private:
     QGridLayout*     pMainLayout;
@@ -81,6 +82,7 @@ private:
     Plot2D*          pPlotE2_Om;
     Plot2D*          pPlotTD_Om;
     ConfigureDlg*    pConfigureDlg;
+    double*          frequencies;
     int              gpibBoardID;
     bool	         bPlotE1_Om;
     bool	         bPlotE2_Om;
@@ -93,4 +95,5 @@ private:
     QString          sErrorStyle;
     QString          sLogFileName;
     QString          sLogDir;
+    uint             nFrequencies;
 };
