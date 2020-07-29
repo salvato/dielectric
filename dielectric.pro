@@ -1,8 +1,3 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2017-12-13T15:05:19
-#
-#-------------------------------------------------
 #MIT License
 
 #Copyright (c) 2017 salvato
@@ -32,57 +27,40 @@ QT += widgets
 TARGET = dielectric
 TEMPLATE = app
 
-# The following define makes your compiler emit warnings if you use
-# any feature of Qt which as been marked as deprecated (the exact warnings
-# depend on your compiler). Please consult the documentation of the
-# deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
-
-# You can also make your code fail to compile if you use deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+
 
 INCLUDEPATH += /usr/local/include
 
 
 # For National Instruments GPIB Boards
 LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
-LIBS += -L"/usr/local/lib" -lpigpiod_if2
 
 
-SOURCES += main.cpp \
-    gpibdevice.cpp \
-    datastream2d.cpp \
-    plotpropertiesdlg.cpp \
-    configuredlg.cpp \
-    filetab.cpp
+SOURCES += main.cpp
+SOURCES += gpibdevice.cpp
+SOURCES += datastream2d.cpp
+SOURCES += plotpropertiesdlg.cpp
+SOURCES += configuredlg.cpp
+SOURCES += filetab.cpp
 SOURCES += hp4284a.cpp
-SOURCES +=
 SOURCES += axesdialog.cpp
 SOURCES += AxisFrame.cpp
 SOURCES += AxisLimits.cpp
-SOURCES +=
 SOURCES += DataSetProperties.cpp
 SOURCES += plot2d.cpp
-SOURCES +=
 SOURCES += mainwindow.cpp
 
-HEADERS += mainwindow.h \
-    gpibdevice.h \
-    datastream2d.h \
-    plotpropertiesdlg.h \
-    configuredlg.h \
-    filetab.h
+HEADERS += mainwindow.h
+HEADERS += gpibdevice.h
+HEADERS += datastream2d.h
+HEADERS += plotpropertiesdlg.h
+HEADERS += configuredlg.h
+HEADERS += filetab.h
 HEADERS += hp4284a.h
-HEADERS +=
 HEADERS += axesdialog.h
 HEADERS += AxisFrame.h
 HEADERS += AxisLimits.h
-HEADERS +=
 HEADERS += DataSetProperties.h
 HEADERS += plot2d.h
-HEADERS +=
-
-FORMS +=
-FORMS +=
