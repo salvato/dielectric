@@ -45,6 +45,7 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     : QDialog(parent)
     , pOutputFile(nullptr)
     , pLogFile(nullptr)
+    , pHp4284a(nullptr)
     , pPlotE1_Om(nullptr)
     , pPlotE2_Om(nullptr)
     , pPlotTD_Om(nullptr)
@@ -440,27 +441,27 @@ MainWindow::onShowTD() {
 uint
 MainWindow::initFrequencies() {
     if(frequencies) delete frequencies;
-    double f0 = 1.0/*atof(pMeasureParCfg->sFMin)*/;
+    double f0 = 20.0;//atof(pMeasureParCfg->sFMin);
     uint i=0, j=0;
-    while(f0 <= 1.0e6/*atof(pMeasureParCfg->sFMax)*/) {
+    while(f0 <= 1.0e6) {//atof(pMeasureParCfg->sFMax)) {
         i++;
         f0 *= 2.0;
     }
-    if(f0/2.0 < 1.0e6/*atof(pMeasureParCfg->sFMax)*/) {
+    if(f0/2.0 < 1.0e6) {//atof(pMeasureParCfg->sFMax)) {
         i++;
     }
     frequencies = new double[i];
     j = i;
-    frequencies[0] = 1.0/*atof(pMeasureParCfg->sFMin)*/;
+    frequencies[0] = 20.0;//atof(pMeasureParCfg->sFMin);
     if(pHp4284a->setFrequency(frequencies[0])) {
-        QThread::msleep(100);
+        //QThread::msleep(1000);
         frequencies[0] = pHp4284a->getFrequency();
     }
     for(i=1; i<j; i++) {
         frequencies[i] = 2.0 * frequencies[i-1];
         if(frequencies[i] > 1.0e6) frequencies[i] = 1.0e6;
         if(pHp4284a->setFrequency(frequencies[i])) {
-            QThread::msleep(100);
+            //QThread::msleep(1000);
             frequencies[i] = pHp4284a->getFrequency();
         }
     }
