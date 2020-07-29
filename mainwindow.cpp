@@ -35,6 +35,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
+#include <QThread>
 
 
 MainWindow::MainWindow(int iBoard, QWidget *parent)
@@ -45,6 +46,7 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , pPlotE2_Om(nullptr)
     , pPlotTD_Om(nullptr)
     , pConfigureDlg(nullptr)
+    , frequencies(nullptr)
     , gpibBoardID(iBoard)
 {
     // Init internal variables
@@ -164,7 +166,8 @@ MainWindow::initLayout() {
     QGridLayout* pLayout = new QGridLayout();
     startMeasureButton.setText("Start Measure");
     configureButton.setText("Configure");
-    pLayout->addWidget(&configureButton, 0, 0, 1, 1);
+    pLayout->addWidget(&configureButton,    0, 0, 1, 1);
+    pLayout->addWidget(&startMeasureButton, 0, 1, 1, 1);
     setLayout(pLayout);
 }
 
@@ -342,9 +345,13 @@ MainWindow::onStartMeasure() {
     if(sTitle == "Stop") {
         endMeasure();
     } else {
-        nFreq          = initFreq();
-        pHp4284a->setMode(CHp4284a::CPD);
-        pHp4284a->setFreq(getFirstFreq());
+        if(pHp4284a->init()) {
+            return;
+        }
+        nFrequencies = initFrequencies();
+        pHp4284a->setMode(Hp4284a::CPD);
+        pHp4284a->setFrequency(frequencies[0]);
+
         pPlotE1_Om->ClearPlot();
         pPlotE2_Om->ClearPlot();
         pPlotTD_Om->ClearPlot();
@@ -365,6 +372,37 @@ MainWindow::onStartMeasure() {
         //pMsg->AddText(sTitle);
         //iStatus = STATUS_MEASURING;
     }
+}
+
+
+uint
+MainWindow::initFrequencies() {
+    if(frequencies) delete frequencies;
+    double f0 = 1.0/*atof(pMeasureParCfg->sFMin)*/;
+    uint i=0, j=0;
+    while(f0 <= 1.0e6/*atof(pMeasureParCfg->sFMax)*/) {
+        i++;
+        f0 *= 2.0;
+    }
+    if(f0/2.0 < 1.0e6/*atof(pMeasureParCfg->sFMax)*/) {
+        i++;
+    }
+    frequencies = new double[i];
+    j = i;
+    frequencies[0] = 1.0/*atof(pMeasureParCfg->sFMin)*/;
+    if(pHp4284a->setFrequency(frequencies[0])) {
+        QThread::sleep(1);
+        frequencies[0] = pHp4284a->getFrequency();
+    }
+    for(i=1; i<j; i++) {
+        frequencies[i] = 2.0 * frequencies[i-1];
+        if(frequencies[i] > 1.0e6) frequencies[i] = 1.0e6;
+        if(pHp4284a->setFrequency(frequencies[i])) {
+            QThread::sleep(1);
+            frequencies[i] = pHp4284a->getFrequency();
+        }
+    }
+    return j;
 }
 
 
