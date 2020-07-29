@@ -37,6 +37,8 @@ QT_FORWARD_DECLARE_CLASS(Hp4284a)
 QT_FORWARD_DECLARE_CLASS(Plot2D)
 QT_FORWARD_DECLARE_CLASS(QGridLayout)
 QT_FORWARD_DECLARE_CLASS(ConfigureDlg)
+QT_FORWARD_DECLARE_CLASS(QCheckBox)
+QT_FORWARD_DECLARE_CLASS(QStatusBar)
 
 
 class MainWindow : public QDialog
@@ -56,6 +58,9 @@ public slots:
     void onConfigure();
     void onStartMeasure();
     void onCorrectionDone();
+    void onShowE1();
+    void onShowE2();
+    void onShowTD();
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -82,6 +87,10 @@ private:
     Plot2D*          pPlotE2_Om;
     Plot2D*          pPlotTD_Om;
     ConfigureDlg*    pConfigureDlg;
+    QCheckBox*       pShowE1_F;
+    QCheckBox*       pShowE2_F;
+    QCheckBox*       pShowTD_F;
+    QStatusBar*      pStatusBar;
     double*          frequencies;
     int              gpibBoardID;
     bool	         bPlotE1_Om;

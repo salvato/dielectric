@@ -30,6 +30,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QCheckBox>
+#include <QStatusBar>
 #include <QSettings>
 #include <QDebug>
 #include <QMessageBox>
@@ -48,6 +49,10 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , pPlotE2_Om(nullptr)
     , pPlotTD_Om(nullptr)
     , pConfigureDlg(nullptr)
+    , pShowE1_F(nullptr)
+    , pShowE2_F(nullptr)
+    , pShowTD_F(nullptr)
+    , pStatusBar(nullptr)
     , frequencies(nullptr)
     , gpibBoardID(iBoard)
 {
@@ -92,6 +97,9 @@ MainWindow::closeEvent(QCloseEvent *event) {
     if(pPlotTD_Om)    delete pPlotTD_Om;
     if(pConfigureDlg) delete pConfigureDlg;
     if(pOutputFile)   delete pOutputFile;
+    if(pShowE1_F)      delete pShowE1_F;
+    if(pShowE2_F)      delete pShowE2_F;
+    if(pShowTD_F)      delete pShowTD_F;
 
     if(pLogFile) {
         if(pLogFile->isOpen()) {
@@ -170,19 +178,23 @@ MainWindow::initLayout() {
     configureButton.setText("Configure");
     QGroupBox* pPlotBox = new QGroupBox("Visible Plots");
 
-    QCheckBox* showE1_F = new QCheckBox(tr("Show E1(F)"));
-    QCheckBox* showE2_F = new QCheckBox(tr("Show E2(F)"));
-    QCheckBox* showTD_F = new QCheckBox(tr("Show TD(F)"));
+    pShowE1_F = new QCheckBox(tr("Show E1(F)"));
+    pShowE2_F = new QCheckBox(tr("Show E2(F)"));
+    pShowTD_F = new QCheckBox(tr("Show TD(F)"));
     QVBoxLayout *vbox = new QVBoxLayout;
-    vbox->addWidget(showE1_F);
-    vbox->addWidget(showE2_F);
-    vbox->addWidget(showTD_F);
+    vbox->addWidget(pShowE1_F);
+    vbox->addWidget(pShowE2_F);
+    vbox->addWidget(pShowTD_F);
     vbox->addStretch(1);
     pPlotBox->setLayout(vbox);
+
+    pStatusBar = new QStatusBar();
+    pStatusBar->setSizeGripEnabled(false);
 
     pLayout->addWidget(&configureButton,    0, 0, 1, 1);
     pLayout->addWidget(&startMeasureButton, 0, 1, 1, 1);
     pLayout->addWidget(pPlotBox,            1, 0, 4, 1);
+    pLayout->addWidget(pStatusBar,          5, 0, 1, 2);
     setLayout(pLayout);
 }
 
@@ -198,6 +210,12 @@ MainWindow::connectSignals() {
             this, SLOT(onStartMeasure()));
     connect(&configureButton, SIGNAL(clicked()),
             this, SLOT(onConfigure()));
+    connect(pShowE1_F, SIGNAL(clicked()),
+            this, SLOT(onShowE1()));
+    connect(pShowE2_F, SIGNAL(clicked()),
+            this, SLOT(onShowE2()));
+    connect(pShowTD_F, SIGNAL(clicked()),
+            this, SLOT(onShowTD()));
 }
 
 
@@ -330,21 +348,22 @@ MainWindow::initPlots() {
     pPlotE2_Om->UpdatePlot();
     pPlotTD_Om->UpdatePlot();
 
-    if(bPlotE1_Om)
+    if(pShowE1_F->isChecked())
         pPlotE1_Om->show();
     else
         pPlotE1_Om->hide();
 
-    if(bPlotE2_Om)
+    if(pShowE2_F->isChecked())
         pPlotE2_Om->show();
     else
         pPlotE2_Om->hide();
 
-    if(bPlotTD_Om)
+    if(pShowTD_F->isChecked())
         pPlotTD_Om->show();
     else
         pPlotTD_Om->hide();
 }
+
 
 
 void
@@ -387,6 +406,33 @@ MainWindow::onStartMeasure() {
         //pMsg->AddText(sTitle);
         //iStatus = STATUS_MEASURING;
     }
+}
+
+
+void
+MainWindow::onShowE1() {
+    if(pShowE1_F->isChecked())
+        pPlotE1_Om->show();
+    else
+        pPlotE1_Om->hide();
+}
+
+
+void
+MainWindow::onShowE2() {
+    if(pShowE2_F->isChecked())
+        pPlotE2_Om->show();
+    else
+        pPlotE2_Om->hide();
+}
+
+
+void
+MainWindow::onShowTD() {
+    if(pShowTD_F->isChecked())
+        pPlotTD_Om->show();
+    else
+        pPlotTD_Om->hide();
 }
 
 
