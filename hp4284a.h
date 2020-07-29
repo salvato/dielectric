@@ -16,7 +16,6 @@ public:
 
 public:
     int     init();
-    double  getFrequency();
     bool    setMode(int Mode);
     bool    disableQuery();
     bool    queryValues();
@@ -27,6 +26,9 @@ public:
     bool    openCorrection();
     QString getValues();
     bool    setFrequency(double Frequency);
+    double  getFrequency();
+    bool    setAmplitude(double amplitude);
+    double  getAmpltude();
 
 signals:
     void correctionDone();

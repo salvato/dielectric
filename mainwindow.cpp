@@ -387,6 +387,7 @@ MainWindow::onStartMeasure() {
         nFrequencies = initFrequencies();
         pHp4284a->setMode(Hp4284a::CPD);
         pHp4284a->setFrequency(frequencies[0]);
+        pHp4284a->setAmplitude(2.0);
 
         pPlotE1_Om->ClearPlot();
         pPlotE2_Om->ClearPlot();
@@ -404,6 +405,14 @@ MainWindow::onStartMeasure() {
         startMeasureButton.setText("Stop");
         configureButton.setEnabled(false);
 
+        for(uint i=0; i<nFrequencies; i++) {
+            pHp4284a->setFrequency(frequencies[i]);
+            pHp4284a->queryValues();
+            QStringList sListVal = pHp4284a->getValues().remove('\n').split(",");
+            for(int i=0; i<sListVal.count(); i++)
+                qDebug() << sListVal.at(i);
+        }
+        endMeasure();
         //sTitle = QString("In Attesa di Raggiungere %.1f K\r\n", TemperaturaDaRaggiungere);
         //pMsg->AddText(sTitle);
         //iStatus = STATUS_MEASURING;
@@ -441,13 +450,13 @@ MainWindow::onShowTD() {
 uint
 MainWindow::initFrequencies() {
     if(frequencies) delete frequencies;
-    double f0 = 20.0;//atof(pMeasureParCfg->sFMin);
+    double f0 = 20.0; //atof(pMeasureParCfg->sFMin);
     uint i=0, j=0;
-    while(f0 <= 1.0e6) {//atof(pMeasureParCfg->sFMax)) {
+    while(f0 <= 1.0e6) { //atof(pMeasureParCfg->sFMax)) {
         i++;
         f0 *= 2.0;
     }
-    if(f0/2.0 < 1.0e6) {//atof(pMeasureParCfg->sFMax)) {
+    if(f0/2.0 < 1.0e6) { //atof(pMeasureParCfg->sFMax)) {
         i++;
     }
     frequencies = new double[i];

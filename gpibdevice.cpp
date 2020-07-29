@@ -7,6 +7,7 @@ GpibDevice::GpibDevice(int gpio, int address, QObject *parent)
     , gpibAddress(address)
     , gpibId(-1)
 {
+    pollInterval = 300; // in ms
 }
 
 
@@ -69,7 +70,6 @@ GpibDevice::ErrMsg(int sta, int err, long cntl) {
 
 uint
 GpibDevice::gpibWrite(int ud, QString sCmd) {
-    //qDebug() << QString("Writing %1 bytes of data: Data = %2").arg(sCmd.length()).arg(sCmd.toUtf8().constData());
     ibwrt(ud, sCmd.toUtf8().constData(), sCmd.length());
     isGpibError("GPIB Writing Error Writing");
     return uint(ThreadIbsta());

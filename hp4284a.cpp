@@ -49,10 +49,6 @@ Hp4284a::init() {
         emit aMessage("Nolistener at Addr");
         return GPIB_DEVICE_NOT_PRESENT;
     }
-    // set up the asynchronous event notification routine on RQS
-    connect(&pollTimer, SIGNAL(timeout()),
-            this, SLOT(checkNotify()));
-    pollTimer.start(pollInterval);
     ibclr(gpibId);
     QThread::sleep(1);
     if(!myInit())
@@ -119,17 +115,6 @@ Hp4284a::myInit() {
         emit mustExit();
     }
     sCommand  = "CORR:LENG 1\r\n";
-    gpibWrite(gpibId, sCommand);
-    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
-        emit mustExit();
-    }
-    return true;
-}
-
-
-bool
-Hp4284a::setFrequency(double Frequency) {
-    sCommand =QString("FREQ %1 HZ\r\n").arg(Frequency);
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
@@ -374,9 +359,46 @@ Hp4284a::setMode(int Mode) {
 }
 
 
+bool
+Hp4284a::setFrequency(double Frequency) {
+    sCommand =QString("FREQ %1 HZ\r\n").arg(Frequency);
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    return true;
+}
+
+
 double
 Hp4284a::getFrequency() {
     sCommand = "FREQ?\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    QString sResults = gpibRead(gpibId);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    return sResults.toDouble();
+}
+
+
+bool
+Hp4284a::setAmplitude(double amplitude) {
+    sCommand =QString("VOLT %1 V\r\n").arg(amplitude);
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    return true;
+}
+
+
+double
+Hp4284a::getAmpltude() {
+    sCommand = "VOLT?\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
