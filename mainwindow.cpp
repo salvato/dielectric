@@ -174,10 +174,11 @@ void
 MainWindow::initLayout() {
     // Create the Dialog Layout
     QGridLayout* pLayout = new QGridLayout();
+    // Buttons
     startMeasureButton.setText("Start Measure");
     configureButton.setText("Configure");
+    // Plots Group
     QGroupBox* pPlotBox = new QGroupBox("Visible Plots");
-
     pShowE1_F = new QCheckBox(tr("Show E1(F)"));
     pShowE2_F = new QCheckBox(tr("Show E2(F)"));
     pShowTD_F = new QCheckBox(tr("Show TD(F)"));
@@ -187,10 +188,10 @@ MainWindow::initLayout() {
     vbox->addWidget(pShowTD_F);
     vbox->addStretch(1);
     pPlotBox->setLayout(vbox);
-
+    // Status Bar
     pStatusBar = new QStatusBar();
     pStatusBar->setSizeGripEnabled(false);
-
+    // General Layout
     pLayout->addWidget(&configureButton,    0, 0, 1, 1);
     pLayout->addWidget(&startMeasureButton, 0, 1, 1, 1);
     pLayout->addWidget(pPlotBox,            1, 0, 4, 1);

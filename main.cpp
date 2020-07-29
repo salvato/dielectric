@@ -4,7 +4,7 @@
 #include <QFileInfo>
 
 
-#define TEST_NO_INTERFACE
+//#define TEST_NO_INTERFACE
 
 
 void
