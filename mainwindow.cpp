@@ -28,6 +28,8 @@
 
 
 #include <QGridLayout>
+#include <QGroupBox>
+#include <QCheckBox>
 #include <QSettings>
 #include <QDebug>
 #include <QMessageBox>
@@ -166,8 +168,21 @@ MainWindow::initLayout() {
     QGridLayout* pLayout = new QGridLayout();
     startMeasureButton.setText("Start Measure");
     configureButton.setText("Configure");
+    QGroupBox* pPlotBox = new QGroupBox("Visible Plots");
+
+    QCheckBox* showE1_F = new QCheckBox(tr("Show E1(F)"));
+    QCheckBox* showE2_F = new QCheckBox(tr("Show E2(F)"));
+    QCheckBox* showTD_F = new QCheckBox(tr("Show TD(F)"));
+    QVBoxLayout *vbox = new QVBoxLayout;
+    vbox->addWidget(showE1_F);
+    vbox->addWidget(showE2_F);
+    vbox->addWidget(showTD_F);
+    vbox->addStretch(1);
+    pPlotBox->setLayout(vbox);
+
     pLayout->addWidget(&configureButton,    0, 0, 1, 1);
     pLayout->addWidget(&startMeasureButton, 0, 1, 1, 1);
+    pLayout->addWidget(pPlotBox,            1, 0, 4, 1);
     setLayout(pLayout);
 }
 
@@ -391,14 +406,14 @@ MainWindow::initFrequencies() {
     j = i;
     frequencies[0] = 1.0/*atof(pMeasureParCfg->sFMin)*/;
     if(pHp4284a->setFrequency(frequencies[0])) {
-        QThread::sleep(1);
+        QThread::msleep(100);
         frequencies[0] = pHp4284a->getFrequency();
     }
     for(i=1; i<j; i++) {
         frequencies[i] = 2.0 * frequencies[i-1];
         if(frequencies[i] > 1.0e6) frequencies[i] = 1.0e6;
         if(pHp4284a->setFrequency(frequencies[i])) {
-            QThread::sleep(1);
+            QThread::msleep(100);
             frequencies[i] = pHp4284a->getFrequency();
         }
     }
