@@ -410,7 +410,7 @@ MainWindow::onStartMeasure() {
             pHp4284a->queryValues();
             QStringList sListVal = pHp4284a->getValues().remove('\n').split(",");
             for(int i=0; i<sListVal.count(); i++)
-                qDebug() << sListVal.at(i);
+                qDebug() << sListVal.at(i); // Cp, D, Status
         }
         endMeasure();
         //sTitle = QString("In Attesa di Raggiungere %.1f K\r\n", TemperaturaDaRaggiungere);
