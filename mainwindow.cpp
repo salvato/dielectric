@@ -183,6 +183,9 @@ MainWindow::initLayout() {
     pShowE1_F = new QCheckBox(tr("Show E1(F)"));
     pShowE2_F = new QCheckBox(tr("Show E2(F)"));
     pShowTD_F = new QCheckBox(tr("Show TD(F)"));
+    pShowE1_F->setChecked(true);
+    pShowE2_F->setChecked(true);
+    pShowTD_F->setChecked(true);
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(pShowE1_F);
     vbox->addWidget(pShowE2_F);
@@ -314,6 +317,8 @@ MainWindow::checkInstruments() {
         if(sInstrumentID.contains("4284A", Qt::CaseInsensitive)) {
             if(pHp4284a == nullptr) {
                 pHp4284a = new Hp4284a(gpibBoardID, resultlist[i], this);
+                connect(pHp4284a, SIGNAL(aMessage(QString)),
+                        this, SLOT(onGpibMessage(QString)));
             }
         }
     }
@@ -385,7 +390,7 @@ MainWindow::onStartMeasure() {
             return;
         }
         nFrequencies = initFrequencies();
-        pHp4284a->setMode(Hp4284a::CPD);
+        pHp4284a->setMode(Hp4284a::CPRP);
         pHp4284a->setFrequency(frequencies[0]);
         pHp4284a->setAmplitude(2.0);
 
@@ -393,28 +398,38 @@ MainWindow::onStartMeasure() {
         pPlotE2_Om->ClearPlot();
         pPlotTD_Om->ClearPlot();
 
-        pPlotE1_Om->NewDataSet(0, 1, QColor(0xFF, 0, 0), Plot2D::iline, "E1(F)");
+        pPlotE1_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "E1(F)");
         pPlotE1_Om->SetShowDataSet(1, true);
 
-        pPlotE2_Om->NewDataSet(1, 1, QColor(0xFF, 0, 0), Plot2D::iline, "E2(F)");
+        pPlotE2_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "E2(F)");
         pPlotE2_Om->SetShowDataSet(1, true);
 
-        pPlotTD_Om->NewDataSet(1, 1, QColor(0xFF, 0, 0), Plot2D::iline, "TanD(F)");
+        pPlotTD_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "TanD(F)");
         pPlotTD_Om->SetShowDataSet(1, true);
 
         startMeasureButton.setText("Stop");
         configureButton.setEnabled(false);
 
         for(uint i=0; i<nFrequencies; i++) {
+            qDebug() << frequencies[i];
             pHp4284a->setFrequency(frequencies[i]);
             pHp4284a->queryValues();
-            QStringList sListVal = pHp4284a->getValues().remove('\n').split(",");
-            for(int i=0; i<sListVal.count(); i++)
-                qDebug() << sListVal.at(i); // Cp, D, Status
+            QString sZvalues = pHp4284a->getValues();
+            QStringList sListVal = sZvalues.remove('\n').split(",");
+            if(sListVal.count() > 2) {
+                if(sListVal[2].toInt() == 0) {
+                    pPlotE1_Om->NewPoint(1, frequencies[i], sListVal[0].toDouble());
+                    pPlotE2_Om->NewPoint(1, frequencies[i], sListVal[1].toDouble());
+                    pPlotTD_Om->NewPoint(1, frequencies[i], sListVal[0].toDouble()/sListVal[1].toDouble());
+                    pPlotE1_Om->UpdatePlot();
+                    pPlotE2_Om->UpdatePlot();
+                    pPlotTD_Om->UpdatePlot();
+                }
+            }
         }
+        qDebug() << "Done";
         endMeasure();
-        //sTitle = QString("In Attesa di Raggiungere %.1f K\r\n", TemperaturaDaRaggiungere);
-        //pMsg->AddText(sTitle);
+        //sTitle = QString("In Attesa di sZvalues
         //iStatus = STATUS_MEASURING;
     }
 }
@@ -501,3 +516,8 @@ MainWindow::onCorrectionDone() {
 */
 }
 
+
+void
+MainWindow::onGpibMessage(QString sMessage) {
+    qDebug() << sMessage;
+}

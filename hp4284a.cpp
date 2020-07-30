@@ -34,7 +34,7 @@ Hp4284a::~Hp4284a() {
 
 int
 Hp4284a::init() {
-    gpibId = ibdev(gpibNumber, gpibAddress, 0, T3s, 1, 0);
+    gpibId = ibdev(gpibNumber, gpibAddress, 0, T30s, 1, 0);
     if(gpibId < 0) {
         QString sError = ErrMsg(ThreadIbsta(), ThreadIberr(), ThreadIbcntl());
         emit aMessage(Q_FUNC_INFO + sError);
@@ -69,12 +69,27 @@ Hp4284a::myInit() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
-    sCommand  = "FUNC:IMP:TYPE CPD;:FUNC:IMP:RANG:AUTO ON\r\n";
+    sCommand  = "FUNC:IMP:TYPE CPRP\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    sCommand  = "FUNC:IMP:RANG:AUTO ON\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    sCommand = "AMPL:ALC ON\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
     sCommand  = "DISP:PAGE MEAS\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    sCommand = "APER LONG, 7";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
@@ -114,7 +129,7 @@ Hp4284a::myInit() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
-    sCommand  = "CORR:LENG 1\r\n";
+    sCommand  = "CORR:LENG 0\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();

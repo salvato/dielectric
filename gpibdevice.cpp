@@ -13,7 +13,9 @@ GpibDevice::GpibDevice(int gpio, int address, QObject *parent)
 
 bool
 GpibDevice::isGpibError(QString sErrorString) {
-    if(ThreadIbsta() & ERR) {
+    if((ThreadIbsta() & ERR) ||
+       (ThreadIbsta() & TIMO))
+    {
         QString sError = ErrMsg(ThreadIbsta(), ThreadIberr(), ThreadIbcnt());
         emit aMessage(sErrorString + QString("\n") + sError);
         return true;

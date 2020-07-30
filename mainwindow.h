@@ -61,6 +61,7 @@ public slots:
     void onShowE1();
     void onShowE2();
     void onShowTD();
+    void onGpibMessage(QString sMessage);
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
