@@ -57,6 +57,7 @@ public:
 public slots:
     void onConfigure();
     void onStartMeasure();
+    void onNew4284Measure();
     void onCorrectionDone();
     void onShowE1();
     void onShowE2();
@@ -78,6 +79,8 @@ protected:
     void logMessage(QString sMessage);
     void endMeasure();
     uint initFrequencies();
+    bool prepareOutputFile(QString sBaseDir, QString sFileName);
+    void writeHeader();
 
 private:
     QGridLayout*     pMainLayout;
@@ -106,4 +109,5 @@ private:
     QString          sLogFileName;
     QString          sLogDir;
     uint             nFrequencies;
+    uint             currentFrequencyIndex;
 };

@@ -39,7 +39,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QThread>
-
+#include <QApplication>
 
 MainWindow::MainWindow(int iBoard, QWidget *parent)
     : QDialog(parent)
@@ -319,6 +319,8 @@ MainWindow::checkInstruments() {
                 pHp4284a = new Hp4284a(gpibBoardID, resultlist[i], this);
                 connect(pHp4284a, SIGNAL(aMessage(QString)),
                         this, SLOT(onGpibMessage(QString)));
+                connect(pHp4284a, SIGNAL(measurementComplete()),
+                        this, SLOT(onNew4284Measure()));
             }
         }
     }
@@ -379,6 +381,68 @@ MainWindow::onConfigure() {
 }
 
 
+bool
+MainWindow::prepareOutputFile(QString sBaseDir, QString sFileName) {
+    if(pOutputFile) {
+        pOutputFile->close();
+        pOutputFile->deleteLater();
+        pOutputFile = Q_NULLPTR;
+    }
+    pOutputFile = new QFile(sBaseDir + "/" + sFileName);
+    if(!pOutputFile->open(QIODevice::Text|QIODevice::WriteOnly)) {
+        QMessageBox::critical(this,
+                              "Error: Unable to Open Output File",
+                              QString("%1/%2")
+                              .arg(sBaseDir)
+                              .arg(sFileName));
+        pStatusBar->showMessage("Unable to Open Output file...");
+        return false;
+    }
+    return true;
+}
+
+
+void
+MainWindow::writeHeader() { // Write the File header
+// To cope with the GnuPlot way to handle the comment lines
+// we need a # as a first chraracter in each comment row.
+/*
+    pOutputFile->write(QString("%1 %2 %3 %4\n")
+                           .arg("#Time[s]", 12)
+                           .arg("V[V]", 12)
+                           .arg("I[A]", 12)
+                           .arg("T[K]", 12)
+                           .toLocal8Bit());
+        if(pConfigureDlg->pTabK236->bSourceI) {
+            pOutputFile->write(QString("# Current=%1[A] Compliance=%2[V]\n")
+                               .arg(pConfigureDialog->pTabK236->dStart)
+                               .arg(pConfigureDialog->pTabK236->dCompliance).toLocal8Bit());
+        }
+        else {
+            pOutputFile->write(QString("# Voltage=%1[V] Compliance=%2[A]\n")
+                               .arg(pConfigureDialog->pTabK236->dStart)
+                               .arg(pConfigureDialog->pTabK236->dCompliance).toLocal8Bit());
+        }
+    }
+    else if(bUseHp3478) {
+        pOutputFile->write(QString("%1 %2 %3\n")
+                           .arg("#Time[s]", 12)
+                           .arg("R[Ohm]", 12)
+                           .arg("T[K]", 12)
+                           .toLocal8Bit());
+    }
+
+    QStringList HeaderLines = pConfigureDialog->pTabFile->sSampleInfo.split("\n");
+    for(int i=0; i<HeaderLines.count(); i++) {
+        pOutputFile->write("# ");
+        pOutputFile->write(HeaderLines.at(i).toLocal8Bit());
+        pOutputFile->write("\n");
+    }
+*/
+    pOutputFile->flush();
+}
+
+
 void
 MainWindow::onStartMeasure() {
     QString sTitle;
@@ -386,11 +450,12 @@ MainWindow::onStartMeasure() {
     if(sTitle == "Stop") {
         endMeasure();
     } else {
+        QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
         if(pHp4284a->init()) {
             return;
         }
         nFrequencies = initFrequencies();
-        pHp4284a->setMode(Hp4284a::CPRP);
+        pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
         pHp4284a->setFrequency(frequencies[0]);
         pHp4284a->setAmplitude(2.0);
 
@@ -407,9 +472,24 @@ MainWindow::onStartMeasure() {
         pPlotTD_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "TanD(F)");
         pPlotTD_Om->SetShowDataSet(1, true);
 
+        // Open the Output file
+        pStatusBar->showMessage("Opening Output file...");
+        if(!prepareOutputFile(pConfigureDlg->pTabFile->sBaseDir,
+                              pConfigureDlg->pTabFile->sOutFileName))
+        {
+            pStatusBar->showMessage("Unable to Open the Output file...");
+            QApplication::restoreOverrideCursor();
+            return;
+        }
+        writeHeader();
+
         startMeasureButton.setText("Stop");
         configureButton.setEnabled(false);
-
+        currentFrequencyIndex = 0;
+        pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
+        pHp4284a->enableQuery();
+        pHp4284a->queryValues();
+/*
         for(uint i=0; i<nFrequencies; i++) {
             qDebug() << frequencies[i];
             pHp4284a->setFrequency(frequencies[i]);
@@ -431,6 +511,7 @@ MainWindow::onStartMeasure() {
         endMeasure();
         //sTitle = QString("In Attesa di sZvalues
         //iStatus = STATUS_MEASURING;
+*/
     }
 }
 
@@ -478,14 +559,12 @@ MainWindow::initFrequencies() {
     j = i;
     frequencies[0] = 20.0;//atof(pMeasureParCfg->sFMin);
     if(pHp4284a->setFrequency(frequencies[0])) {
-        //QThread::msleep(1000);
         frequencies[0] = pHp4284a->getFrequency();
     }
     for(i=1; i<j; i++) {
         frequencies[i] = 2.0 * frequencies[i-1];
         if(frequencies[i] > 1.0e6) frequencies[i] = 1.0e6;
         if(pHp4284a->setFrequency(frequencies[i])) {
-            //QThread::msleep(1000);
             frequencies[i] = pHp4284a->getFrequency();
         }
     }
@@ -494,10 +573,37 @@ MainWindow::initFrequencies() {
 
 
 void
+MainWindow::onNew4284Measure() {
+    QString sZvalues = pHp4284a->getValues();
+    QStringList sListVal = sZvalues.remove('\n').split(",");
+    if(sListVal.count() > 2) {
+        double f = frequencies[currentFrequencyIndex];
+        if(sListVal[2].toInt() == 0) {
+            pPlotE1_Om->NewPoint(1, f, sListVal[0].toDouble());
+            pPlotE2_Om->NewPoint(1, f, sListVal[1].toDouble());
+            pPlotTD_Om->NewPoint(1, f, sListVal[0].toDouble()/sListVal[1].toDouble());
+            pPlotE1_Om->UpdatePlot();
+            pPlotE2_Om->UpdatePlot();
+            pPlotTD_Om->UpdatePlot();
+        }
+    }
+    if(currentFrequencyIndex++ >= nFrequencies) {
+        endMeasure();
+    }
+    else {
+        pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
+        pHp4284a->queryValues();
+    }
+}
+
+
+void
 MainWindow::endMeasure() {
+    pHp4284a->disableQuery();
     startMeasureButton.setText("Start Measure");
     configureButton.setEnabled(true);
-    //pMsg->AddText("Misura Terminata\r\n");
+    QApplication::restoreOverrideCursor();
+    pStatusBar->showMessage("Misura Terminata");
     //iStatus = STATUS_IDLE;
 }
 
