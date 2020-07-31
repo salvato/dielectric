@@ -38,14 +38,27 @@ FileTab::FileTab(int iConfiguration, QWidget *parent)
 
     // Build the Tab layout
     QGridLayout* pLayout = new QGridLayout();
-    pLayout->addWidget(new QLabel("File Path"),          0, 0, 1, 1);
-    pLayout->addWidget(&outPathEdit,                     0, 1, 1, 5);
-    pLayout->addWidget(&outFilePathButton,               0, 6, 1, 1);
-    pLayout->addWidget(new QLabel("File Name"),          1, 0, 1, 1);
-    pLayout->addWidget(&outFileEdit,                     1, 1, 1, 6);
-    pLayout->addWidget(new QLabel("Sample Information"), 2, 0, 1, 7);
-    pLayout->addWidget(&sampleInformationEdit,           3, 0, 4, 7);
+    pLayout->addWidget(new QLabel("File Path"),            0, 0, 1, 1);
+    pLayout->addWidget(&outPathEdit,                       0, 1, 1, 5);
+    pLayout->addWidget(&outFilePathButton,                 0, 6, 1, 1);
+    pLayout->addWidget(new QLabel("File Name"),            1, 0, 1, 1);
+    pLayout->addWidget(&outFileEdit,                       1, 1, 1, 6);
+    pLayout->addWidget(new QLabel("Sample Thickness[mm]"), 2, 0, 1, 4);
+    pLayout->addWidget(&sampleThicknessEdit,               2, 4, 1, 3);
+    pLayout->addWidget(new QLabel("Sample Area[mm^2]"),    3, 0, 1, 4);
+    pLayout->addWidget(&sampleAreaEdit,                    3, 4, 1, 3);
+    pLayout->addWidget(new QLabel("Sample Information"),   4, 0, 1, 7);
+    pLayout->addWidget(&sampleInformationEdit,             5, 0, 4, 7);
     setLayout(pLayout);
+
+    sNormalStyle = sampleAreaEdit.styleSheet();
+
+    sErrorStyle  = "QLineEdit { ";
+    sErrorStyle += "color: rgb(255, 255, 255);";
+    sErrorStyle += "background: rgb(255, 0, 0);";
+    sErrorStyle += "selection-background-color: rgb(128, 128, 255);";
+    sErrorStyle += "}";
+
 
     connectSignals();
     restoreSettings();
@@ -56,6 +69,8 @@ FileTab::FileTab(int iConfiguration, QWidget *parent)
 
 void
 FileTab::initUI() {
+    sampleThicknessEdit.setText(sSampleThickness);
+    sampleAreaEdit.setText(sSampleArea);
     sampleInformationEdit.setPlainText(sSampleInfo);
     outPathEdit.setText(sBaseDir);
     outFileEdit.setText(sOutFileName);
@@ -64,6 +79,8 @@ FileTab::initUI() {
 
 void
 FileTab::setToolTips() {
+    sampleThicknessEdit.setToolTip(QString("Enter Sample Thickness in mm"));
+    sampleAreaEdit.setToolTip(QString("Enter Sample Area in mm^2"));
     sampleInformationEdit.setToolTip(QString("Enter Sample description (multiline)"));
     outPathEdit.setToolTip(QString("Output File Folder"));
     outFileEdit.setToolTip(QString("Enter Output File Name"));
@@ -73,17 +90,49 @@ FileTab::setToolTips() {
 
 void
 FileTab::connectSignals() {
+    connect(&sampleThicknessEdit, SIGNAL(textChanged(const QString)),
+            this, SLOT(onSampleThicknessTextChanged(const QString)));
+    connect(&sampleAreaEdit, SIGNAL(textChanged(const QString)),
+            this, SLOT(onSampleAreaTextChanged(const QString)));
     connect(&outFilePathButton, SIGNAL(clicked()),
             this, SLOT(on_outFilePathButton_clicked()));
 }
 
 
 void
+FileTab::onSampleAreaTextChanged(const QString &sValue) {
+    double dTemp = sValue.toDouble();
+    bool bValid = dTemp > 0.0;
+    if(bValid) {
+        sampleAreaEdit.setStyleSheet(sNormalStyle);
+    }
+    else {
+        sampleAreaEdit.setStyleSheet(sErrorStyle);
+    }
+}
+
+
+void
+FileTab::onSampleThicknessTextChanged(const QString &sValue) {
+    double dTemp = sValue.toDouble();
+    bool bValid = dTemp > 0.0;
+    if(bValid) {
+        sampleThicknessEdit.setStyleSheet(sNormalStyle);
+    }
+    else {
+        sampleThicknessEdit.setStyleSheet(sErrorStyle);
+    }
+}
+
+
+void
 FileTab::restoreSettings() {
     QSettings settings;
-    sSampleInfo    = settings.value("FileTabSampleInfo", "").toString();
-    sBaseDir       = settings.value("FileTabBaseDir", sBaseDir).toString();
-    sOutFileName   = settings.value("FileTabOutFileName", sOutFileName).toString();
+    sSampleThickness = settings.value("FileTabSampleThickness", "1.0").toString();
+    sSampleArea      = settings.value("FileTabSampleArea", "1.0").toString();
+    sSampleInfo      = settings.value("FileTabSampleInfo", "").toString();
+    sBaseDir         = settings.value("FileTabBaseDir", sBaseDir).toString();
+    sOutFileName     = settings.value("FileTabOutFileName", sOutFileName).toString();
 }
 
 
@@ -91,6 +140,8 @@ void
 FileTab::saveSettings() {
     QSettings settings;
     sSampleInfo = sampleInformationEdit.toPlainText();
+    settings.setValue("FileTabSampleThickness", sSampleThickness);
+    settings.setValue("FileTabSampleArea", sSampleArea);
     settings.setValue("FileTabSampleInfo", sSampleInfo);
     settings.setValue("FileTabBaseDir", sBaseDir);
     settings.setValue("FileTabOutFileName", sOutFileName);

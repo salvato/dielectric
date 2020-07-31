@@ -38,6 +38,8 @@ signals:
 
 public slots:
     void on_outFilePathButton_clicked();
+    void onSampleAreaTextChanged(const QString &sValue);
+    void onSampleThicknessTextChanged(const QString &sValue);
 
 protected:
     void initUI();
@@ -45,6 +47,8 @@ protected:
     void connectSignals();
 
 public:
+    QString sSampleThickness;
+    QString sSampleArea;
     QString sSampleInfo;
     QString sBaseDir;
     QString sOutFileName;
@@ -54,6 +58,12 @@ private:
     QLineEdit      outPathEdit;
     QLineEdit      outFileEdit;
     QPushButton    outFilePathButton;
+    QLineEdit      sampleThicknessEdit;
+    QLineEdit      sampleAreaEdit;
+
+    // QLineEdit styles
+    QString sNormalStyle;
+    QString sErrorStyle;
 
     int            myConfiguration;
 };
