@@ -1,8 +1,34 @@
+// MIT License
+
+// Copyright (c) 2020 Gabriele Salvato
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "hp4284a.h"
 
 #include <gpib/ib.h>
 #include <QThread>
 
+
+// The HP 4284A offers C-D measurements with a basic accuracy of
+// +/- 0.05%(C), +/- 0.0005(D) at all test frequencies with six digit
+// resolution
 
 
 namespace hp4284a {
@@ -134,6 +160,9 @@ Hp4284a::myInit() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
+    pollTimer.start(200);
+    connect(&pollTimer, SIGNAL(timeout()),
+            this, SLOT(checkNotify()));
     return true;
 }
 

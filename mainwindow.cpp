@@ -519,5 +519,5 @@ MainWindow::onCorrectionDone() {
 
 void
 MainWindow::onGpibMessage(QString sMessage) {
-    qDebug() << sMessage;
+    logMessage(sMessage);
 }
