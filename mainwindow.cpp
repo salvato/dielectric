@@ -178,6 +178,9 @@ MainWindow::initLayout() {
     // Buttons
     startMeasureButton.setText("Start Measure");
     configureButton.setText("Configure");
+    openCorrectionButton.setText("Open Corr.");
+    shortCorrectionButton.setText("Short Coor.");
+    loadCorrectionButton.setText("Load Corr.");
     // Plots Group
     QGroupBox* pPlotBox = new QGroupBox("Visible Plots");
     pShowE1_F = new QCheckBox(tr("Show E1(F)"));
@@ -196,10 +199,14 @@ MainWindow::initLayout() {
     pStatusBar = new QStatusBar();
     pStatusBar->setSizeGripEnabled(false);
     // General Layout
-    pLayout->addWidget(&configureButton,    0, 0, 1, 1);
-    pLayout->addWidget(&startMeasureButton, 0, 1, 1, 1);
-    pLayout->addWidget(pPlotBox,            1, 0, 4, 1);
-    pLayout->addWidget(pStatusBar,          5, 0, 1, 2);
+    pLayout->addWidget(&configureButton,       0, 0, 1, 1);
+    pLayout->addWidget(&startMeasureButton,    0, 1, 1, 1);
+    pLayout->addWidget(&openCorrectionButton,  1, 0, 1, 1);
+    pLayout->addWidget(&shortCorrectionButton, 1, 1, 1, 1);
+    pLayout->addWidget(&loadCorrectionButton,  1, 2, 1, 1);
+
+    pLayout->addWidget(pPlotBox,               2, 0, 4, 1);
+    pLayout->addWidget(pStatusBar,             6, 0, 1, 2);
     setLayout(pLayout);
 }
 

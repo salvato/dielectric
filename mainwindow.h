@@ -104,6 +104,9 @@ private:
     QSettings        settings;
     QPushButton      configureButton;
     QPushButton      startMeasureButton;
+    QPushButton      openCorrectionButton;
+    QPushButton      shortCorrectionButton;
+    QPushButton      loadCorrectionButton;
     QString          sNormalStyle;
     QString          sErrorStyle;
     QString          sLogFileName;
