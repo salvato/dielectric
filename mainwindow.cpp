@@ -349,9 +349,9 @@ MainWindow::initPlots() {
     pPlotE2_Om = new Plot2D(nullptr, "E\"(F)");
     pPlotTD_Om = new Plot2D(nullptr, "Tan_Delta(F)");
 
-    pPlotE1_Om->SetLimits(1.0, 10.0, 1.0, 10.0, true, true, true, false);
-    pPlotE2_Om->SetLimits(1.0, 10.0, 1.0, 10.0, true, true, true, false);
-    pPlotTD_Om->SetLimits(1.0, 10.0, 1.0, 10.0, true, true, true, false);
+    pPlotE1_Om->SetLimits(10.0, 1.0e6, 1.0, 10.0, false, true, true, false);
+    pPlotE2_Om->SetLimits(10.0, 1.0e6, 1.0, 10.0, false, true, true, false);
+    pPlotTD_Om->SetLimits(10.0, 1.0e6, 1.0, 10.0, false, true, true, false);
 
     pPlotE1_Om->UpdatePlot();
     pPlotE2_Om->UpdatePlot();
@@ -449,70 +449,48 @@ MainWindow::onStartMeasure() {
     sTitle = startMeasureButton.text();
     if(sTitle == "Stop") {
         endMeasure();
-    } else {
-        QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
-        if(pHp4284a->init()) {
-            return;
-        }
-        nFrequencies = initFrequencies();
-        pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
-        pHp4284a->setFrequency(frequencies[0]);
-        pHp4284a->setAmplitude(2.0);
-
-        pPlotE1_Om->ClearPlot();
-        pPlotE2_Om->ClearPlot();
-        pPlotTD_Om->ClearPlot();
-
-        pPlotE1_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "E1(F)");
-        pPlotE1_Om->SetShowDataSet(1, true);
-
-        pPlotE2_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "E2(F)");
-        pPlotE2_Om->SetShowDataSet(1, true);
-
-        pPlotTD_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "TanD(F)");
-        pPlotTD_Om->SetShowDataSet(1, true);
-
-        // Open the Output file
-        pStatusBar->showMessage("Opening Output file...");
-        if(!prepareOutputFile(pConfigureDlg->pTabFile->sBaseDir,
-                              pConfigureDlg->pTabFile->sOutFileName))
-        {
-            pStatusBar->showMessage("Unable to Open the Output file...");
-            QApplication::restoreOverrideCursor();
-            return;
-        }
-        writeHeader();
-
-        startMeasureButton.setText("Stop");
-        configureButton.setEnabled(false);
-        currentFrequencyIndex = 0;
-        pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
-        pHp4284a->enableQuery();
-        pHp4284a->queryValues();
-/*
-        for(uint i=0; i<nFrequencies; i++) {
-            qDebug() << frequencies[i];
-            pHp4284a->setFrequency(frequencies[i]);
-            pHp4284a->queryValues();
-            QString sZvalues = pHp4284a->getValues();
-            QStringList sListVal = sZvalues.remove('\n').split(",");
-            if(sListVal.count() > 2) {
-                if(sListVal[2].toInt() == 0) {
-                    pPlotE1_Om->NewPoint(1, frequencies[i], sListVal[0].toDouble());
-                    pPlotE2_Om->NewPoint(1, frequencies[i], sListVal[1].toDouble());
-                    pPlotTD_Om->NewPoint(1, frequencies[i], sListVal[0].toDouble()/sListVal[1].toDouble());
-                    pPlotE1_Om->UpdatePlot();
-                    pPlotE2_Om->UpdatePlot();
-                    pPlotTD_Om->UpdatePlot();
-                }
-            }
-        }
-        qDebug() << "Done";
-        endMeasure();
-        //sTitle = QString("In Attesa di sZvalues
-        //iStatus = STATUS_MEASURING;
-*/
+        return;
     }
+    QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+    if(pHp4284a->init()) {
+        return;
+    }
+    pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    nFrequencies = initFrequencies();
+    qDebug() << "N frequencies=" << nFrequencies;
+    pHp4284a->setFrequency(frequencies[0]);
+    pHp4284a->setAmplitude(2.0);
+
+    pPlotE1_Om->ClearPlot();
+    pPlotE2_Om->ClearPlot();
+    pPlotTD_Om->ClearPlot();
+
+    pPlotE1_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "E1(F)");
+    pPlotE1_Om->SetShowDataSet(1, true);
+
+    pPlotE2_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "E2(F)");
+    pPlotE2_Om->SetShowDataSet(1, true);
+
+    pPlotTD_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "TanD(F)");
+    pPlotTD_Om->SetShowDataSet(1, true);
+
+    // Open the Output file
+    if(!prepareOutputFile(pConfigureDlg->pTabFile->sBaseDir,
+                          pConfigureDlg->pTabFile->sOutFileName))
+    {
+        pStatusBar->showMessage("Unable to Open the Output file...");
+        QApplication::restoreOverrideCursor();
+        return;
+    }
+    writeHeader();
+
+    startMeasureButton.setText("Stop");
+    configureButton.setEnabled(false);
+    currentFrequencyIndex = 0;
+    pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
+    pHp4284a->enableQuery();
+    pHp4284a->queryValues();
+    pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies[currentFrequencyIndex]));
 }
 
 
@@ -546,29 +524,28 @@ MainWindow::onShowTD() {
 uint
 MainWindow::initFrequencies() {
     if(frequencies) delete frequencies;
-    double f0 = 20.0; //atof(pMeasureParCfg->sFMin);
-    uint i=0, j=0;
-    while(f0 <= 1.0e6) { //atof(pMeasureParCfg->sFMax)) {
+    frequencies = nullptr;
+    double f0 = 20.0;
+    uint i=0, nF=0;
+    while(f0 < 1.0e6) {
         i++;
         f0 *= 2.0;
     }
-    if(f0/2.0 < 1.0e6) { //atof(pMeasureParCfg->sFMax)) {
-        i++;
-    }
-    frequencies = new double[i];
-    j = i;
-    frequencies[0] = 20.0;//atof(pMeasureParCfg->sFMin);
-    if(pHp4284a->setFrequency(frequencies[0])) {
+    qDebug() << i << f0;
+    nF = i+1;
+    frequencies = new double[nF-1];
+    f0 = 20.0;
+    if(pHp4284a->setFrequency(f0)) {
         frequencies[0] = pHp4284a->getFrequency();
     }
-    for(i=1; i<j; i++) {
-        frequencies[i] = 2.0 * frequencies[i-1];
-        if(frequencies[i] > 1.0e6) frequencies[i] = 1.0e6;
-        if(pHp4284a->setFrequency(frequencies[i])) {
+    for(i=1; i<nF; i++) {
+        f0 = 2.0 * f0;
+        if(f0 > 1.0e6) f0 = 1.0e6;
+        if(pHp4284a->setFrequency(f0)) {
             frequencies[i] = pHp4284a->getFrequency();
         }
     }
-    return j;
+    return nF;
 }
 
 
@@ -587,13 +564,13 @@ MainWindow::onNew4284Measure() {
             pPlotTD_Om->UpdatePlot();
         }
     }
-    if(currentFrequencyIndex++ >= nFrequencies) {
+    if(++currentFrequencyIndex >= nFrequencies) {
         endMeasure();
+        return;
     }
-    else {
-        pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
-        pHp4284a->queryValues();
-    }
+    pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
+    pHp4284a->queryValues();
+    pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies[currentFrequencyIndex]));
 }
 
 
@@ -610,7 +587,7 @@ MainWindow::endMeasure() {
 
 void
 MainWindow::onCorrectionDone() {
-    /*
+/*
     pHp4284a->CloseCorrection();
     bSetup.EnableWindow(true);
     bFileSave.EnableWindow(bDataAvailable);
