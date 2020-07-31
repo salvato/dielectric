@@ -38,7 +38,8 @@ INCLUDEPATH += /usr/local/include
 LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    hp4284tab.cpp
 SOURCES += gpibdevice.cpp
 SOURCES += datastream2d.cpp
 SOURCES += plotpropertiesdlg.cpp
@@ -52,7 +53,8 @@ SOURCES += DataSetProperties.cpp
 SOURCES += plot2d.cpp
 SOURCES += mainwindow.cpp
 
-HEADERS += mainwindow.h
+HEADERS += mainwindow.h \
+    hp4284tab.h
 HEADERS += gpibdevice.h
 HEADERS += datastream2d.h
 HEADERS += plotpropertiesdlg.h

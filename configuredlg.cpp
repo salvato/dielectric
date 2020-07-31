@@ -22,6 +22,7 @@
 
 #include "configuredlg.h"
 #include "filetab.h"
+#include "hp4284tab.h"
 
 #include <QTabWidget>
 #include <QDialogButtonBox>
@@ -32,12 +33,15 @@
 
 ConfigureDlg::ConfigureDlg(int iConfiguration, QWidget *parent)
     : QDialog(parent)
-    , pTabFile(Q_NULLPTR)
+    , pTab4284(nullptr)
+    , pTabFile(nullptr)
     , pParent(parent)
     , configurationType(iConfiguration)
 {
     pTabWidget   = new QTabWidget();
+    pTab4284     = new hp4284Tab(this);
     pTabFile     = new FileTab(configurationType, this);
+    i4284Index   = pTabWidget->addTab(pTab4284,  tr("Hp4284a"));
     iFileIndex   = pTabWidget->addTab(pTabFile,  tr("Out File"));
 
     pButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
@@ -66,23 +70,26 @@ ConfigureDlg::connectSignals() {
 
 void
 ConfigureDlg::onCancel() {
-    if(pTabFile)   pTabFile->restoreSettings();
+    if(pTab4284) pTab4284->restoreSettings();
+    if(pTabFile) pTabFile->restoreSettings();
     reject();
 }
 
 
 void
 ConfigureDlg::onOk() {
+    if(pTab4284) pTab4284->saveSettings();
     if(pTabFile->checkFileName()) {
-        if(pTabFile)   pTabFile->saveSettings();
-        accept();
+        pTabFile->saveSettings();
     }
-    pTabWidget->setCurrentIndex(iFileIndex);
+    pTabWidget->setCurrentIndex(i4284Index);
+    accept();
 }
 
 
 void
 ConfigureDlg::setToolTips() {
-    if(pTabFile) pTabWidget->setTabToolTip(iFileIndex,   QString("Output File configuration"));
+    if(pTabFile)
+        pTabWidget->setTabToolTip(iFileIndex, QString("Output File configuration"));
 }
 

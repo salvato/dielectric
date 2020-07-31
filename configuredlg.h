@@ -33,6 +33,7 @@
 #include <QTextEdit>
 #include <QDialogButtonBox>
 #include "filetab.h"
+#include "hp4284tab.h"
 
 
 QT_FORWARD_DECLARE_CLASS(QGridLayout)
@@ -45,7 +46,7 @@ public:
     ConfigureDlg(int iConfiguration, QWidget *parent);
 
 public:
-//    hp4284Tab* pTab4284;
+    hp4284Tab* pTab4284;
     FileTab*   pTabFile;
 
 signals:
@@ -63,7 +64,7 @@ private:
     QTabWidget*       pTabWidget;
     QDialogButtonBox* pButtonBox;
 
-    int iBridgeIndex;
+    int i4284Index;
     int iFileIndex;
     int configurationType;
 };
