@@ -95,7 +95,7 @@ Hp4284a::myInit() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
-    sCommand  = "FUNC:IMP:TYPE CPRP\r\n";
+    sCommand  = "FUNC:IMP:TYPE CPD\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();

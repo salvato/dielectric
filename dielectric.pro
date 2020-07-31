@@ -67,7 +67,8 @@ HEADERS += AxisLimits.h
 HEADERS += DataSetProperties.h
 HEADERS += plot2d.h
 
-DISTFILES += docs/Agilent_HP4284A.pdf
+DISTFILES += docs/Agilent_HP4284A.pdf \
+    docs/Agilent 16451.pdf
 DISTFILES += docs/hp4284a_lcr_manual.pdf
 DISTFILES += docs/HP4284A.pdf
 DISTFILES += plot.png
