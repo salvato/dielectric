@@ -63,6 +63,8 @@ public slots:
     void onShowE2();
     void onShowTD();
     void onGpibMessage(QString sMessage);
+    void onOpenCorrection();
+    void onShortCorr();
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -81,6 +83,8 @@ protected:
     uint initFrequencies();
     bool prepareOutputFile(QString sBaseDir, QString sFileName);
     void writeHeader();
+    void disableButtons(bool bDisable);
+
 
 private:
     QGridLayout*     pMainLayout;

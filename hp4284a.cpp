@@ -24,7 +24,7 @@
 
 #include <gpib/ib.h>
 #include <QThread>
-
+#include <QDebug>
 
 // The HP 4284A offers C-D measurements with a basic accuracy of
 // +/- 0.05%(C), +/- 0.0005(D) at all test frequencies with six digit
@@ -140,12 +140,12 @@ Hp4284a::myInit() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
-    sCommand  = "CORR:OPEN:STATE OFF\r\n";
+    sCommand  = "CORR:OPEN:STATE ON\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
-    sCommand  = "CORR:SHORT:STATE OFF\r\n";
+    sCommand  = "CORR:SHORT:STATE ON\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
@@ -155,7 +155,7 @@ Hp4284a::myInit() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
-    sCommand  = "CORR:LENG 0\r\n";
+    sCommand  = "CORR:LENG 1\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();

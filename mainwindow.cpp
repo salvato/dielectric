@@ -212,6 +212,16 @@ MainWindow::initLayout() {
 
 
 void
+MainWindow::disableButtons(bool bDisable) {
+    configureButton.setDisabled(bDisable);
+    startMeasureButton.setDisabled(bDisable);
+    openCorrectionButton.setDisabled(bDisable);
+    shortCorrectionButton.setDisabled(bDisable);
+    loadCorrectionButton.setDisabled(bDisable);
+}
+
+
+void
 MainWindow::setToolTips() {
 }
 
@@ -222,6 +232,8 @@ MainWindow::connectSignals() {
             this, SLOT(onStartMeasure()));
     connect(&configureButton, SIGNAL(clicked()),
             this, SLOT(onConfigure()));
+    connect(&openCorrectionButton, SIGNAL(clicked()),
+            this, SLOT(onOpenCorrection()));
     connect(pShowE1_F, SIGNAL(clicked()),
             this, SLOT(onShowE1()));
     connect(pShowE2_F, SIGNAL(clicked()),
@@ -328,6 +340,8 @@ MainWindow::checkInstruments() {
                         this, SLOT(onGpibMessage(QString)));
                 connect(pHp4284a, SIGNAL(measurementComplete()),
                         this, SLOT(onNew4284Measure()));
+                connect(pHp4284a, SIGNAL(correctionDone()),
+                        this, SLOT(onCorrectionDone()));
             }
         }
     }
@@ -411,9 +425,9 @@ MainWindow::prepareOutputFile(QString sBaseDir, QString sFileName) {
 
 void
 MainWindow::writeHeader() { // Write the File header
-// To cope with the GnuPlot way to handle the comment lines
-// we need a # as a first chraracter in each comment row.
-/*
+    // To cope with the GnuPlot way to handle the comment lines
+    // we need a # as a first chraracter in each comment row.
+    /*
     pOutputFile->write(QString("%1 %2 %3 %4\n")
                            .arg("#Time[s]", 12)
                            .arg("V[V]", 12)
@@ -498,6 +512,8 @@ MainWindow::onStartMeasure() {
     pHp4284a->enableQuery();
     pHp4284a->queryValues();
     pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies[currentFrequencyIndex]));
+    disableButtons(true);
+    startMeasureButton.setEnabled(true);
 }
 
 
@@ -585,25 +601,113 @@ void
 MainWindow::endMeasure() {
     pHp4284a->disableQuery();
     startMeasureButton.setText("Start Measure");
-    configureButton.setEnabled(true);
+    disableButtons(false);
     QApplication::restoreOverrideCursor();
     pStatusBar->showMessage("Misura Terminata");
     //iStatus = STATUS_IDLE;
 }
 
+// The correction function has two kinds of correction methods.
+// In one method the open and short correction can be performed
+// at all of the frequency points using the interpolation method,
+// and in the other method the open, short, and load correction
+// can be performed at the frequency points you specify.
+// The OPEN correction data is taken at all 48 preset frequency
+// points, independent of the test frequency you set. Except for
+// those 48 frequency points, the OPEN correction data for each
+// measurement point over the speci ed range is calculated using the
+// interpolation method
+void
+MainWindow::onOpenCorrection() {
+    QString sTitle;
+    sTitle = openCorrectionButton.text();
+    if(sTitle == "Stop") {
+        onCorrectionDone();
+        return;
+    }
+    if(pHp4284a->init()) {
+        return;
+    }
+    pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    pHp4284a->setAmplitude(2.0);
+    QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+    if(!pHp4284a->openCorrection())
+        return;
+    openCorrectionButton.setText("Stop");
+    pStatusBar->showMessage("OPEN Correction in progress: Please wait");
+}
+
+
+void
+MainWindow::onShortCorr() {
+    QString sTitle;
+    sTitle = shortCorrectionButton.text();
+    if(sTitle == "Stop") {
+        onCorrectionDone();
+        return;
+    }
+    if(pHp4284a->init()) {
+        return;
+    }
+    pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    pHp4284a->setAmplitude(2.0);
+    QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+    if(!pHp4284a->shortCorrection())
+        return;
+    shortCorrectionButton.setText("Stop");
+    pStatusBar->showMessage("SHORT Correction in progress: Please wait");
+}
+
+/*
+void
+MainWindow::OnLoadCorr() {
+  CString Title;
+  bLoadCorr.GetWindowText(Title);
+  if(Title == "Stop") {
+    bLoadCorr.SetWindowText("Load Cor.");
+    bSetup.EnableWindow(true);
+    bFileSave.EnableWindow(bDataAvailable);
+    bOpenCorr.EnableWindow(true);
+    bShortCorr.EnableWindow(true);
+    bStart.EnableWindow(true);
+    pMsg->AddText("Load Correction Stopped\r\n");
+    iStatus = STATUS_IDLE;
+    return;
+  }
+  char szFilter[] = "Load Correction Data (*.dat)|*.dat|All Files (*.*)|*.*||";
+  char szDefExt[] = "dat";
+  CFileDialog FileDialog(FALSE, szDefExt, LoadFileName,
+                         OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
+  if(FileDialog.DoModal() != IDOK) return;
+  strcpy(LoadFileName, FileDialog.GetPathName());
+  if(!CheckInstruments()) return;
+  bSetup.EnableWindow(false);
+  bFileSave.EnableWindow(bDataAvailable);
+  bLoadCorr.SetWindowText("Stop");
+  bOpenCorr.EnableWindow(false);
+  bShortCorr.EnableWindow(false);
+  bStart.EnableWindow(false);
+  nFreq = InitFreq();
+  if(Cl != NULL) {delete[] Cl; Cl = NULL;};
+  if(Dl != NULL) {delete[] Dl; Dl = NULL;};
+  Cl = new double[nFreq];
+  Dl = new double[nFreq];
+  bCorrectionCompleted = false;
+  if(pHp4284a != NULL) pHp4284a->SetMode(CHp4284a::CPD);
+  if(pHp4284a != NULL) pHp4284a->SetFreq(GetFirstFreq());
+  pMsg->AddText("Measuring Reference Load. Please Wait\r\n" );
+  iStatus = STATUS_LOADCORR;
+  MeasureCycle();
+}
+*/
 
 void
 MainWindow::onCorrectionDone() {
-/*
-    pHp4284a->CloseCorrection();
-    bSetup.EnableWindow(true);
-    bFileSave.EnableWindow(bDataAvailable);
-    bStart.EnableWindow(true);
-    bOpenCorr.EnableWindow(true);
-    bShortCorr.EnableWindow(true);
-    myCursor = AfxGetApp()->LoadStandardCursor(IDC_ARROW);
-    SetCursor(myCursor);
-*/
+    pHp4284a->closeCorrection();
+    openCorrectionButton.setText("Open Corr.");
+    shortCorrectionButton.setText("Short Corr.");
+    pStatusBar->showMessage("Correction Done !");
+    QApplication::restoreOverrideCursor();
 }
 
 
