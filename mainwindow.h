@@ -30,6 +30,7 @@
 #include <QPlainTextEdit>
 #include <QComboBox>
 #include <QTextEdit>
+#include <QVector>
 
 
 QT_FORWARD_DECLARE_CLASS(QFile)
@@ -64,7 +65,7 @@ public slots:
     void onShowTD();
     void onGpibMessage(QString sMessage);
     void onOpenCorrection();
-    void onShortCorr();
+    void onShortCorrection();
 
 protected:
     void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
@@ -80,7 +81,7 @@ protected:
     bool prepareLogFile();
     void logMessage(QString sMessage);
     void endMeasure();
-    uint initFrequencies();
+    int initFrequencies();
     bool prepareOutputFile(QString sBaseDir, QString sFileName);
     void writeHeader();
     void disableButtons(bool bDisable);
@@ -99,7 +100,7 @@ private:
     QCheckBox*       pShowE2_F;
     QCheckBox*       pShowTD_F;
     QStatusBar*      pStatusBar;
-    double*          frequencies;
+    QVector<double>  frequencies;
     int              gpibBoardID;
     bool	         bPlotE1_Om;
     bool	         bPlotE2_Om;
@@ -115,6 +116,8 @@ private:
     QString          sErrorStyle;
     QString          sLogFileName;
     QString          sLogDir;
-    uint             nFrequencies;
-    uint             currentFrequencyIndex;
+    int              nFrequencies;
+    int              currentFrequencyIndex;
+    const double     e0=8.854e-12;
+    double           c0;
 };

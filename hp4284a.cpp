@@ -215,6 +215,11 @@ Hp4284a::shortCorrection() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
+    sCommand = "AMPL:ALC OFF\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
     sCommand = "STAT:OPER:ENAB 1\r\n";
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
@@ -405,7 +410,7 @@ Hp4284a::setMode(int Mode) {
 
 bool
 Hp4284a::setFrequency(double Frequency) {
-    sCommand =QString("FREQ %1 HZ\r\n").arg(Frequency);
+    sCommand = QString("FREQ %1 HZ\r\n").arg(Frequency);
     gpibWrite(gpibId, sCommand);
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();

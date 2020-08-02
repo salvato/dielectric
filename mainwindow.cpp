@@ -54,7 +54,6 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , pShowE2_F(nullptr)
     , pShowTD_F(nullptr)
     , pStatusBar(nullptr)
-    , frequencies(nullptr)
     , gpibBoardID(iBoard)
 {
     // Init internal variables
@@ -234,6 +233,8 @@ MainWindow::connectSignals() {
             this, SLOT(onConfigure()));
     connect(&openCorrectionButton, SIGNAL(clicked()),
             this, SLOT(onOpenCorrection()));
+    connect(&shortCorrectionButton, SIGNAL(clicked()),
+            this, SLOT(onShortCorrection()));
     connect(pShowE1_F, SIGNAL(clicked()),
             this, SLOT(onShowE1()));
     connect(pShowE2_F, SIGNAL(clicked()),
@@ -427,39 +428,22 @@ void
 MainWindow::writeHeader() { // Write the File header
     // To cope with the GnuPlot way to handle the comment lines
     // we need a # as a first chraracter in each comment row.
-    /*
     pOutputFile->write(QString("%1 %2 %3 %4\n")
-                           .arg("#Time[s]", 12)
-                           .arg("V[V]", 12)
-                           .arg("I[A]", 12)
-                           .arg("T[K]", 12)
+                           .arg("#Frequency[Hz]", 12)
+                           .arg("E1r", 12)
+                           .arg("E2r", 12)
+                           .arg("TanD", 12)
                            .toLocal8Bit());
-        if(pConfigureDlg->pTabK236->bSourceI) {
-            pOutputFile->write(QString("# Current=%1[A] Compliance=%2[V]\n")
-                               .arg(pConfigureDialog->pTabK236->dStart)
-                               .arg(pConfigureDialog->pTabK236->dCompliance).toLocal8Bit());
-        }
-        else {
-            pOutputFile->write(QString("# Voltage=%1[V] Compliance=%2[A]\n")
-                               .arg(pConfigureDialog->pTabK236->dStart)
-                               .arg(pConfigureDialog->pTabK236->dCompliance).toLocal8Bit());
-        }
-    }
-    else if(bUseHp3478) {
-        pOutputFile->write(QString("%1 %2 %3\n")
-                           .arg("#Time[s]", 12)
-                           .arg("R[Ohm]", 12)
-                           .arg("T[K]", 12)
+    pOutputFile->write(QString("#Area = %1mm^2 Thickness=%2mm\n")
+                           .arg(pConfigureDlg->pTabFile->sSampleArea, 12)
+                           .arg(pConfigureDlg->pTabFile->sSampleThickness, 12)
                            .toLocal8Bit());
-    }
-
-    QStringList HeaderLines = pConfigureDialog->pTabFile->sSampleInfo.split("\n");
+    QStringList HeaderLines = pConfigureDlg->pTabFile->sSampleInfo.split("\n");
     for(int i=0; i<HeaderLines.count(); i++) {
         pOutputFile->write("# ");
         pOutputFile->write(HeaderLines.at(i).toLocal8Bit());
         pOutputFile->write("\n");
     }
-*/
     pOutputFile->flush();
 }
 
@@ -473,15 +457,25 @@ MainWindow::onStartMeasure() {
         return;
     }
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+    disableButtons(true);
+    pStatusBar->showMessage("Initializing 4284a...");
+    repaint();
+    c0 = (e0*pConfigureDlg->pTabFile->sSampleArea.toDouble()*10.e-6)/
+         (pConfigureDlg->pTabFile->sSampleThickness.toDouble()*1.0e-3);
     if(pHp4284a->init()) {
+        pStatusBar->showMessage("Unable to Initialize 4248a...");
+        disableButtons(false);
         return;
     }
     pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    pStatusBar->showMessage("Initializing measurement frequencies...");
+    repaint();
     nFrequencies = initFrequencies();
-    qDebug() << "N frequencies=" << nFrequencies;
-    pHp4284a->setFrequency(frequencies[0]);
+    pHp4284a->setFrequency(frequencies.at(0));
     pHp4284a->setAmplitude(2.0);
 
+    pStatusBar->showMessage("Initializing Plots...");
+    repaint();
     pPlotE1_Om->ClearPlot();
     pPlotE2_Om->ClearPlot();
     pPlotTD_Om->ClearPlot();
@@ -495,24 +489,28 @@ MainWindow::onStartMeasure() {
     pPlotTD_Om->NewDataSet(1, 3, QColor(0xFF, 0xFF, 0), Plot2D::iline, "TanD(F)");
     pPlotTD_Om->SetShowDataSet(1, true);
 
+    pStatusBar->showMessage("Initializing Output File...");
+    repaint();
     // Open the Output file
     if(!prepareOutputFile(pConfigureDlg->pTabFile->sBaseDir,
                           pConfigureDlg->pTabFile->sOutFileName))
     {
-        pStatusBar->showMessage("Unable to Open the Output file...");
+        pStatusBar->showMessage("Unable to Open the Output File...");
         QApplication::restoreOverrideCursor();
+        disableButtons(false);
         return;
     }
+    pStatusBar->showMessage("Writing File Header...");
+    repaint();
     writeHeader();
 
     startMeasureButton.setText("Stop");
     configureButton.setEnabled(false);
     currentFrequencyIndex = 0;
-    pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
+    pHp4284a->setFrequency(frequencies.at(currentFrequencyIndex));
     pHp4284a->enableQuery();
     pHp4284a->queryValues();
-    pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies[currentFrequencyIndex]));
-    disableButtons(true);
+    pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies.at(currentFrequencyIndex)));
     startMeasureButton.setEnabled(true);
 }
 
@@ -544,31 +542,21 @@ MainWindow::onShowTD() {
 }
 
 
-uint
+int
 MainWindow::initFrequencies() {
-    if(frequencies) delete frequencies;
-    frequencies = nullptr;
+    frequencies.clear();
     double f0 = 20.0;
-    uint i=0, nF=0;
     while(f0 < 1.0e6) {
-        i++;
-        f0 *= 2.0;
-    }
-    qDebug() << i << f0;
-    nF = i+1;
-    frequencies = new double[nF-1];
-    f0 = 20.0;
-    if(pHp4284a->setFrequency(f0)) {
-        frequencies[0] = pHp4284a->getFrequency();
-    }
-    for(i=1; i<nF; i++) {
-        f0 = 2.0 * f0;
-        if(f0 > 1.0e6) f0 = 1.0e6;
         if(pHp4284a->setFrequency(f0)) {
-            frequencies[i] = pHp4284a->getFrequency();
+            frequencies.append(pHp4284a->getFrequency());
         }
+        f0 = 2.0 * f0;
     }
-    return nF;
+    f0 = 1.0e6;
+    if(pHp4284a->setFrequency(f0)) {
+        frequencies.append(pHp4284a->getFrequency());
+    }
+    return frequencies.count();
 }
 
 
@@ -579,12 +567,20 @@ MainWindow::onNew4284Measure() {
     if(sListVal.count() > 2) {
         double f = frequencies[currentFrequencyIndex];
         if(sListVal[2].toInt() == 0) {
-            pPlotE1_Om->NewPoint(1, f, sListVal[0].toDouble());
-            pPlotE2_Om->NewPoint(1, f, sListVal[1].toDouble());
-            pPlotTD_Om->NewPoint(1, f, sListVal[0].toDouble()/sListVal[1].toDouble());
+            double e1 = sListVal[0].toDouble()/c0;
+            double e2 = sListVal[1].toDouble()/e1;
+            pPlotE1_Om->NewPoint(1, f, e1);
+            pPlotE2_Om->NewPoint(1, f, e2);
+            pPlotTD_Om->NewPoint(1, f, sListVal[1].toDouble());
             pPlotE1_Om->UpdatePlot();
             pPlotE2_Om->UpdatePlot();
             pPlotTD_Om->UpdatePlot();
+            QString sData = QString("%1 %2 %3\n")
+                                    .arg(e1, 12, 'g', 6, ' ')
+                                    .arg(e2, 12, 'g', 6, ' ')
+                                    .arg(sListVal[1].toDouble(), 12, 'g', 6, ' ');
+            pOutputFile->write(sData.toLocal8Bit());
+            pOutputFile->flush();
         }
     }
     if(++currentFrequencyIndex >= nFrequencies) {
@@ -600,6 +596,11 @@ MainWindow::onNew4284Measure() {
 void
 MainWindow::endMeasure() {
     pHp4284a->disableQuery();
+    if(pOutputFile) {
+        pOutputFile->close();
+        pOutputFile->deleteLater();
+        pOutputFile = nullptr;
+    }
     startMeasureButton.setText("Start Measure");
     disableButtons(false);
     QApplication::restoreOverrideCursor();
@@ -615,8 +616,8 @@ MainWindow::endMeasure() {
 // The OPEN correction data is taken at all 48 preset frequency
 // points, independent of the test frequency you set. Except for
 // those 48 frequency points, the OPEN correction data for each
-// measurement point over the speci ed range is calculated using the
-// interpolation method
+// measurement point over the specified range is calculated using
+// the interpolation method
 void
 MainWindow::onOpenCorrection() {
     QString sTitle;
@@ -628,7 +629,7 @@ MainWindow::onOpenCorrection() {
     if(pHp4284a->init()) {
         return;
     }
-    pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    pHp4284a->setMode(Hp4284a::CPD);
     pHp4284a->setAmplitude(2.0);
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     if(!pHp4284a->openCorrection())
@@ -639,7 +640,7 @@ MainWindow::onOpenCorrection() {
 
 
 void
-MainWindow::onShortCorr() {
+MainWindow::onShortCorrection() {
     QString sTitle;
     sTitle = shortCorrectionButton.text();
     if(sTitle == "Stop") {
@@ -649,8 +650,9 @@ MainWindow::onShortCorr() {
     if(pHp4284a->init()) {
         return;
     }
-    pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    pHp4284a->setMode(Hp4284a::CPD);
     pHp4284a->setAmplitude(2.0);
+
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     if(!pHp4284a->shortCorrection())
         return;
@@ -707,6 +709,7 @@ MainWindow::onCorrectionDone() {
     openCorrectionButton.setText("Open Corr.");
     shortCorrectionButton.setText("Short Corr.");
     pStatusBar->showMessage("Correction Done !");
+    disableButtons(false);
     QApplication::restoreOverrideCursor();
 }
 
