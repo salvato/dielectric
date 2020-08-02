@@ -40,7 +40,19 @@
 #include <QFileInfo>
 #include <QThread>
 #include <QApplication>
-
+/*
+{
+    20, 25, 30, 40, 50, 60, 80,
+    100, 120, 150, 200, 250, 300, 400, 500, 600, 800,
+    1*1.0e3, 1.2*1.0e3, 1.5*1.0e3, 2*1.0e3, 2.5*1.0e3,
+    3*1.0e3, 4*1.0e3, 5*1.0e3, 6*1.0e3, 8*1.0e3,
+    10*1.0e3, 12*1.0e3, 15*1.0e3, 20*1.0e3, 25*1.0e3,
+    30*1.0e3, 40*1.0e3, 50*1.0e3, 60*1.0e3, 80*1.0e3,
+    100*1.0e3, 120*1.0e3, 150*1.0e3, 200*1.0e3, 250*1.0e3,
+    300*1.0e3, 400*1.0e3, 500*1.0e3, 600*1.0e3, 800*1.0e3,
+    1*1.0e6
+}
+*/
 MainWindow::MainWindow(int iBoard, QWidget *parent)
     : QDialog(parent)
     , pOutputFile(nullptr)
@@ -434,10 +446,11 @@ MainWindow::writeHeader() { // Write the File header
                            .arg("E2r", 12)
                            .arg("TanD", 12)
                            .toLocal8Bit());
-    pOutputFile->write(QString("#Area = %1mm^2 Thickness=%2mm\n")
-                           .arg(pConfigureDlg->pTabFile->sSampleArea, 12)
-                           .arg(pConfigureDlg->pTabFile->sSampleThickness, 12)
-                           .toLocal8Bit());
+    pOutputFile->write(QString("#Area = %1mm^2 Thickness=%2mm C0=%3 F\n")
+                       .arg(pConfigureDlg->pTabFile->sSampleArea, 12)
+                       .arg(pConfigureDlg->pTabFile->sSampleThickness, 12)
+                       .arg(c0, 12)
+                       .toLocal8Bit());
     QStringList HeaderLines = pConfigureDlg->pTabFile->sSampleInfo.split("\n");
     for(int i=0; i<HeaderLines.count(); i++) {
         pOutputFile->write("# ");
@@ -456,6 +469,8 @@ MainWindow::onStartMeasure() {
         endMeasure();
         return;
     }
+    if(pConfigureDlg->exec() == QDialog::Rejected)
+        return;
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     disableButtons(true);
     pStatusBar->showMessage("Initializing 4284a...");
@@ -467,7 +482,7 @@ MainWindow::onStartMeasure() {
         disableButtons(false);
         return;
     }
-    pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    pHp4284a->setMode(Hp4284a::CPD);
     pStatusBar->showMessage("Initializing measurement frequencies...");
     repaint();
     nFrequencies = initFrequencies();
@@ -575,12 +590,16 @@ MainWindow::onNew4284Measure() {
             pPlotE1_Om->UpdatePlot();
             pPlotE2_Om->UpdatePlot();
             pPlotTD_Om->UpdatePlot();
-            QString sData = QString("%1 %2 %3\n")
-                                    .arg(e1, 12, 'g', 6, ' ')
-                                    .arg(e2, 12, 'g', 6, ' ')
-                                    .arg(sListVal[1].toDouble(), 12, 'g', 6, ' ');
+            QString sData = QString("%1 %2 %3 %4\n")
+                            .arg(f, 12, 'g', 6, ' ')
+                            .arg(e1, 12, 'g', 6, ' ')
+                            .arg(e2, 12, 'g', 6, ' ')
+                            .arg(sListVal[1].toDouble(), 12, 'g', 6, ' ');
             pOutputFile->write(sData.toLocal8Bit());
             pOutputFile->flush();
+            qDebug() << "F=" << f << "Hz"
+                     << "Cp=" << sListVal[0].toDouble() << "Farad"
+                     << "TanD=" << sListVal[1].toDouble();
         }
     }
     if(++currentFrequencyIndex >= nFrequencies) {
