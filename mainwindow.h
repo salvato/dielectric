@@ -106,7 +106,7 @@ private:
     QPushButton      startMeasureButton;
     QPushButton      openCorrectionButton;
     QPushButton      shortCorrectionButton;
-    QPushButton      loadCorrectionButton;
+    //QPushButton      loadCorrectionButton;
     QString          sNormalStyle;
     QString          sErrorStyle;
     QString          sLogFileName;
