@@ -30,7 +30,6 @@
 #include <QPlainTextEdit>
 #include <QComboBox>
 #include <QTextEdit>
-#include <QVector>
 
 
 QT_FORWARD_DECLARE_CLASS(QFile)
@@ -81,11 +80,9 @@ protected:
     bool prepareLogFile();
     void logMessage(QString sMessage);
     void endMeasure();
-    int initFrequencies();
     bool prepareOutputFile(QString sBaseDir, QString sFileName);
     void writeHeader();
     void disableButtons(bool bDisable);
-
 
 private:
     QGridLayout*     pMainLayout;
@@ -100,14 +97,12 @@ private:
     QCheckBox*       pShowE2_F;
     QCheckBox*       pShowTD_F;
     QStatusBar*      pStatusBar;
-    QVector<double>  frequencies;
     int              gpibBoardID;
     bool	         bPlotE1_Om;
     bool	         bPlotE2_Om;
     bool	         bPlotTD_Om;
     bool             bCanClose;
     QSettings        settings;
-    QPushButton      configureButton;
     QPushButton      startMeasureButton;
     QPushButton      openCorrectionButton;
     QPushButton      shortCorrectionButton;
@@ -120,4 +115,5 @@ private:
     int              currentFrequencyIndex;
     const double     e0=8.854e-12;
     double           c0;
+    QVector<double>  frequencies;
 };

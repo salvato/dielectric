@@ -40,19 +40,7 @@
 #include <QFileInfo>
 #include <QThread>
 #include <QApplication>
-/*
-{
-    20, 25, 30, 40, 50, 60, 80,
-    100, 120, 150, 200, 250, 300, 400, 500, 600, 800,
-    1*1.0e3, 1.2*1.0e3, 1.5*1.0e3, 2*1.0e3, 2.5*1.0e3,
-    3*1.0e3, 4*1.0e3, 5*1.0e3, 6*1.0e3, 8*1.0e3,
-    10*1.0e3, 12*1.0e3, 15*1.0e3, 20*1.0e3, 25*1.0e3,
-    30*1.0e3, 40*1.0e3, 50*1.0e3, 60*1.0e3, 80*1.0e3,
-    100*1.0e3, 120*1.0e3, 150*1.0e3, 200*1.0e3, 250*1.0e3,
-    300*1.0e3, 400*1.0e3, 500*1.0e3, 600*1.0e3, 800*1.0e3,
-    1*1.0e6
-}
-*/
+
 MainWindow::MainWindow(int iBoard, QWidget *parent)
     : QDialog(parent)
     , pOutputFile(nullptr)
@@ -69,6 +57,21 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , gpibBoardID(iBoard)
 {
     // Init internal variables
+
+    frequencies =
+    {
+               20,        25,        30,        40,        50,
+               60,        80,       100,       120,       150,
+              200,       250,       300,       400,       500,
+              600,       800,   1*1.0e3, 1.2*1.0e3, 1.5*1.0e3,
+          2*1.0e3, 2.5*1.0e3,   3*1.0e3,   4*1.0e3,   5*1.0e3,
+          6*1.0e3,   8*1.0e3,  10*1.0e3,  12*1.0e3,  15*1.0e3,
+         20*1.0e3,  25*1.0e3,  30*1.0e3,  40*1.0e3,  50*1.0e3,
+         60*1.0e3,  80*1.0e3, 100*1.0e3, 120*1.0e3, 150*1.0e3,
+        200*1.0e3, 250*1.0e3, 300*1.0e3, 400*1.0e3, 500*1.0e3,
+        600*1.0e3, 800*1.0e3,   1*1.0e6
+    };
+    nFrequencies = frequencies.count();
     bPlotE1_Om = true;
     bPlotE2_Om = true;
     bPlotTD_Om = true;
@@ -101,8 +104,7 @@ void
 MainWindow::closeEvent(QCloseEvent *event) {
     Q_UNUSED(event)
     //stopTimers();
-    QSettings settings;
-    settings.setValue("mainWindowGeometry", saveGeometry());
+    saveSettings();
 
     if(pPlotE1_Om)    delete pPlotE1_Om;
     if(pPlotE2_Om)    delete pPlotE2_Om;
@@ -188,7 +190,6 @@ MainWindow::initLayout() {
     QGridLayout* pLayout = new QGridLayout();
     // Buttons
     startMeasureButton.setText("Start Measure");
-    configureButton.setText("Configure");
     openCorrectionButton.setText("Open Corr.");
     shortCorrectionButton.setText("Short Coor.");
     loadCorrectionButton.setText("Load Corr.");
@@ -210,7 +211,6 @@ MainWindow::initLayout() {
     pStatusBar = new QStatusBar();
     pStatusBar->setSizeGripEnabled(false);
     // General Layout
-    pLayout->addWidget(&configureButton,       0, 0, 1, 1);
     pLayout->addWidget(&startMeasureButton,    0, 1, 1, 1);
     pLayout->addWidget(&openCorrectionButton,  1, 0, 1, 1);
     pLayout->addWidget(&shortCorrectionButton, 1, 1, 1, 1);
@@ -224,7 +224,6 @@ MainWindow::initLayout() {
 
 void
 MainWindow::disableButtons(bool bDisable) {
-    configureButton.setDisabled(bDisable);
     startMeasureButton.setDisabled(bDisable);
     openCorrectionButton.setDisabled(bDisable);
     shortCorrectionButton.setDisabled(bDisable);
@@ -241,8 +240,6 @@ void
 MainWindow::connectSignals() {
     connect(&startMeasureButton, SIGNAL(clicked()),
             this, SLOT(onStartMeasure()));
-    connect(&configureButton, SIGNAL(clicked()),
-            this, SLOT(onConfigure()));
     connect(&openCorrectionButton, SIGNAL(clicked()),
             this, SLOT(onOpenCorrection()));
     connect(&shortCorrectionButton, SIGNAL(clicked()),
@@ -440,11 +437,12 @@ void
 MainWindow::writeHeader() { // Write the File header
     // To cope with the GnuPlot way to handle the comment lines
     // we need a # as a first chraracter in each comment row.
-    pOutputFile->write(QString("%1 %2 %3 %4\n")
+    pOutputFile->write(QString("%1 %2 %3 %4 %5\n")
                            .arg("#Frequency[Hz]", 12)
                            .arg("E1r", 12)
                            .arg("E2r", 12)
                            .arg("TanD", 12)
+                           .arg("Cp", 12)
                            .toLocal8Bit());
     pOutputFile->write(QString("#Area = %1mm^2 Thickness=%2mm C0=%3 F\n")
                        .arg(pConfigureDlg->pTabFile->sSampleArea, 12)
@@ -485,7 +483,6 @@ MainWindow::onStartMeasure() {
     pHp4284a->setMode(Hp4284a::CPD);
     pStatusBar->showMessage("Initializing measurement frequencies...");
     repaint();
-    nFrequencies = initFrequencies();
     pHp4284a->setFrequency(frequencies.at(0));
     pHp4284a->setAmplitude(2.0);
 
@@ -520,7 +517,6 @@ MainWindow::onStartMeasure() {
     writeHeader();
 
     startMeasureButton.setText("Stop");
-    configureButton.setEnabled(false);
     currentFrequencyIndex = 0;
     pHp4284a->setFrequency(frequencies.at(currentFrequencyIndex));
     pHp4284a->enableQuery();
@@ -557,24 +553,6 @@ MainWindow::onShowTD() {
 }
 
 
-int
-MainWindow::initFrequencies() {
-    frequencies.clear();
-    double f0 = 20.0;
-    while(f0 < 1.0e6) {
-        if(pHp4284a->setFrequency(f0)) {
-            frequencies.append(pHp4284a->getFrequency());
-        }
-        f0 = 2.0 * f0;
-    }
-    f0 = 1.0e6;
-    if(pHp4284a->setFrequency(f0)) {
-        frequencies.append(pHp4284a->getFrequency());
-    }
-    return frequencies.count();
-}
-
-
 void
 MainWindow::onNew4284Measure() {
     QString sZvalues = pHp4284a->getValues();
@@ -590,11 +568,12 @@ MainWindow::onNew4284Measure() {
             pPlotE1_Om->UpdatePlot();
             pPlotE2_Om->UpdatePlot();
             pPlotTD_Om->UpdatePlot();
-            QString sData = QString("%1 %2 %3 %4\n")
+            QString sData = QString("%1 %2 %3 %4 %5\n")
                             .arg(f, 12, 'g', 6, ' ')
                             .arg(e1, 12, 'g', 6, ' ')
                             .arg(e2, 12, 'g', 6, ' ')
-                            .arg(sListVal[1].toDouble(), 12, 'g', 6, ' ');
+                            .arg(sListVal[1].toDouble(), 12, 'g', 6, ' ')
+                            .arg(sListVal[0].toDouble(), 12, 'g', 6, ' ');
             pOutputFile->write(sData.toLocal8Bit());
             pOutputFile->flush();
             qDebug() << "F=" << f << "Hz"
@@ -645,6 +624,8 @@ MainWindow::onOpenCorrection() {
         onCorrectionDone();
         return;
     }
+    pStatusBar->showMessage("Initializing 4284a...");
+    repaint();
     if(pHp4284a->init()) {
         return;
     }
@@ -653,6 +634,8 @@ MainWindow::onOpenCorrection() {
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     if(!pHp4284a->openCorrection())
         return;
+    disableButtons(true);
+    openCorrectionButton.setEnabled(true);
     openCorrectionButton.setText("Stop");
     pStatusBar->showMessage("OPEN Correction in progress: Please wait");
 }
@@ -666,6 +649,8 @@ MainWindow::onShortCorrection() {
         onCorrectionDone();
         return;
     }
+    pStatusBar->showMessage("Initializing 4284a...");
+    repaint();
     if(pHp4284a->init()) {
         return;
     }
@@ -675,6 +660,8 @@ MainWindow::onShortCorrection() {
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     if(!pHp4284a->shortCorrection())
         return;
+    disableButtons(true);
+    shortCorrectionButton.setEnabled(true);
     shortCorrectionButton.setText("Stop");
     pStatusBar->showMessage("SHORT Correction in progress: Please wait");
 }
