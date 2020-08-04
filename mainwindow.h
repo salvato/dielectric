@@ -116,4 +116,5 @@ private:
     const double     e0=8.854e-12;
     double           c0;
     QVector<double>  frequencies;
+    double           stabilizeTime;
 };

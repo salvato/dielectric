@@ -76,6 +76,7 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     bPlotE1_Om = true;
     bPlotE2_Om = true;
     bPlotTD_Om = true;
+    stabilizeTime = 10000; // ms
 
     setSizeGripEnabled(false);// To remove the resize-handle in the lower right corner
     setFixedSize(size());// To make the size of the window fixed
@@ -518,7 +519,7 @@ MainWindow::onStartMeasure() {
     startMeasureButton.setText("Stop");
     currentFrequencyIndex = 0;
     pHp4284a->setFrequency(frequencies.at(currentFrequencyIndex));
-    QThread::msleep(2000);
+    QThread::msleep(stabilizeTime);
     pHp4284a->enableQuery();
     pHp4284a->queryValues();
     pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies.at(currentFrequencyIndex)));
@@ -561,7 +562,7 @@ MainWindow::onNew4284Measure() {
         double f = frequencies[currentFrequencyIndex];
         if(sListVal[2].toInt() == 0) {
             double e1 = sListVal[0].toDouble()/c0;
-            double e2 = sListVal[1].toDouble()/e1;
+            double e2 = sListVal[1].toDouble()*e1;
             pPlotE1_Om->NewPoint(1, f, e1);
             pPlotE2_Om->NewPoint(1, f, e2);
             pPlotTD_Om->NewPoint(1, f, sListVal[1].toDouble());
@@ -588,7 +589,7 @@ MainWindow::onNew4284Measure() {
     pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies[currentFrequencyIndex]));
     repaint();
     pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
-    QThread::msleep(2000);
+    QThread::msleep(stabilizeTime);
     pHp4284a->queryValues();
 }
 
