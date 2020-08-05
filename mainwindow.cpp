@@ -55,11 +55,29 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , pShowTD_F(nullptr)
     , pStatusBar(nullptr)
     , gpibBoardID(iBoard)
+    , e0(8.854e-12)
 {
     // Init internal variables
+
+    frequencies =
+    {
+               20,        25,        30,        40,        50,
+               60,        80,       100,       120,       150,
+              200,       250,       300,       400,       500,
+              600,       800,   1*1.0e3, 1.2*1.0e3, 1.5*1.0e3,
+          2*1.0e3, 2.5*1.0e3,   3*1.0e3,   4*1.0e3,   5*1.0e3,
+          6*1.0e3,   8*1.0e3,  10*1.0e3,  12*1.0e3,  15*1.0e3,
+         20*1.0e3,  25*1.0e3,  30*1.0e3,  40*1.0e3,  50*1.0e3,
+         60*1.0e3,  80*1.0e3, 100*1.0e3, 120*1.0e3, 150*1.0e3,
+        200*1.0e3, 250*1.0e3, 300*1.0e3, 400*1.0e3, 500*1.0e3,
+        600*1.0e3, 800*1.0e3,   1*1.0e6
+    };
+    nFrequencies = frequencies.count();
+
     bPlotE1_Om = true;
     bPlotE2_Om = true;
     bPlotTD_Om = true;
+    stabilizeTime = 10000; // ms
 
     setSizeGripEnabled(false);// To remove the resize-handle in the lower right corner
     setFixedSize(size());// To make the size of the window fixed
@@ -89,8 +107,7 @@ void
 MainWindow::closeEvent(QCloseEvent *event) {
     Q_UNUSED(event)
     //stopTimers();
-    QSettings settings;
-    settings.setValue("mainWindowGeometry", saveGeometry());
+    saveSettings();
 
     if(pPlotE1_Om)    delete pPlotE1_Om;
     if(pPlotE2_Om)    delete pPlotE2_Om;
@@ -176,10 +193,9 @@ MainWindow::initLayout() {
     QGridLayout* pLayout = new QGridLayout();
     // Buttons
     startMeasureButton.setText("Start Measure");
-    configureButton.setText("Configure");
     openCorrectionButton.setText("Open Corr.");
     shortCorrectionButton.setText("Short Coor.");
-    loadCorrectionButton.setText("Load Corr.");
+    //loadCorrectionButton.setText("Load Corr.");
     // Plots Group
     QGroupBox* pPlotBox = new QGroupBox("Visible Plots");
     pShowE1_F = new QCheckBox(tr("Show E1(F)"));
@@ -192,31 +208,28 @@ MainWindow::initLayout() {
     vbox->addWidget(pShowE1_F);
     vbox->addWidget(pShowE2_F);
     vbox->addWidget(pShowTD_F);
-    vbox->addStretch(1);
     pPlotBox->setLayout(vbox);
     // Status Bar
     pStatusBar = new QStatusBar();
     pStatusBar->setSizeGripEnabled(false);
     // General Layout
-    pLayout->addWidget(&configureButton,       0, 0, 1, 1);
-    pLayout->addWidget(&startMeasureButton,    0, 1, 1, 1);
-    pLayout->addWidget(&openCorrectionButton,  1, 0, 1, 1);
-    pLayout->addWidget(&shortCorrectionButton, 1, 1, 1, 1);
-    pLayout->addWidget(&loadCorrectionButton,  1, 2, 1, 1);
+    pLayout->addWidget(&startMeasureButton,    0, 0, 1, 1);
+    pLayout->addWidget(&openCorrectionButton,  2, 0, 1, 1);
+    pLayout->addWidget(&shortCorrectionButton, 3, 0, 1, 1);
+    //pLayout->addWidget(&loadCorrectionButton,  1, 2, 1, 1);
 
-    pLayout->addWidget(pPlotBox,               2, 0, 4, 1);
-    pLayout->addWidget(pStatusBar,             6, 0, 1, 2);
+    pLayout->addWidget(pPlotBox,               0, 2, 4, 1);
+    pLayout->addWidget(pStatusBar,             4, 0, 1, 3);
     setLayout(pLayout);
 }
 
 
 void
 MainWindow::disableButtons(bool bDisable) {
-    configureButton.setDisabled(bDisable);
     startMeasureButton.setDisabled(bDisable);
     openCorrectionButton.setDisabled(bDisable);
     shortCorrectionButton.setDisabled(bDisable);
-    loadCorrectionButton.setDisabled(bDisable);
+    //loadCorrectionButton.setDisabled(bDisable);
 }
 
 
@@ -229,8 +242,6 @@ void
 MainWindow::connectSignals() {
     connect(&startMeasureButton, SIGNAL(clicked()),
             this, SLOT(onStartMeasure()));
-    connect(&configureButton, SIGNAL(clicked()),
-            this, SLOT(onConfigure()));
     connect(&openCorrectionButton, SIGNAL(clicked()),
             this, SLOT(onOpenCorrection()));
     connect(&shortCorrectionButton, SIGNAL(clicked()),
@@ -295,7 +306,7 @@ MainWindow::checkInstruments() {
         return false;
     }
     int nDevices = ThreadIbcnt();
-    qInfo() << QString("Found %1 Instruments connected to the GPIB Bus").arg(nDevices);
+    //qInfo() << QString("Found %1 Instruments connected to the GPIB Bus").arg(nDevices);
 
     // Identify the instruments connected to the GPIB Bus
     QString sCommand, sInstrumentID;
@@ -331,9 +342,9 @@ MainWindow::checkInstruments() {
         }
         readBuf[ThreadIbcnt()] = '\0';
         sInstrumentID = QString(readBuf);
-        qDebug() << QString("Address= %1 - InstrumentID= %2")
-                    .arg(resultlist[i])
-                    .arg(sInstrumentID);
+        pStatusBar->showMessage(QString("Found %1 @ Address= %2")
+                                .arg(sInstrumentID)
+                                .arg(resultlist[i]));
         if(sInstrumentID.contains("4284A", Qt::CaseInsensitive)) {
             if(pHp4284a == nullptr) {
                 pHp4284a = new Hp4284a(gpibBoardID, resultlist[i], this);
@@ -428,16 +439,18 @@ void
 MainWindow::writeHeader() { // Write the File header
     // To cope with the GnuPlot way to handle the comment lines
     // we need a # as a first chraracter in each comment row.
-    pOutputFile->write(QString("%1 %2 %3 %4\n")
+    pOutputFile->write(QString("%1 %2 %3 %4 %5\n")
                            .arg("#Frequency[Hz]", 12)
                            .arg("E1r", 12)
                            .arg("E2r", 12)
                            .arg("TanD", 12)
+                           .arg("Cp", 12)
                            .toLocal8Bit());
-    pOutputFile->write(QString("#Area = %1mm^2 Thickness=%2mm\n")
-                           .arg(pConfigureDlg->pTabFile->sSampleArea, 12)
-                           .arg(pConfigureDlg->pTabFile->sSampleThickness, 12)
-                           .toLocal8Bit());
+    pOutputFile->write(QString("#Area = %1mm^2 Thickness=%2mm C0=%3 F\n")
+                       .arg(pConfigureDlg->pTabFile->sSampleArea, 12)
+                       .arg(pConfigureDlg->pTabFile->sSampleThickness, 12)
+                       .arg(c0, 12)
+                       .toLocal8Bit());
     QStringList HeaderLines = pConfigureDlg->pTabFile->sSampleInfo.split("\n");
     for(int i=0; i<HeaderLines.count(); i++) {
         pOutputFile->write("# ");
@@ -456,22 +469,23 @@ MainWindow::onStartMeasure() {
         endMeasure();
         return;
     }
+    if(pConfigureDlg->exec() == QDialog::Rejected)
+        return;
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     disableButtons(true);
     pStatusBar->showMessage("Initializing 4284a...");
     repaint();
-    c0 = (e0*pConfigureDlg->pTabFile->sSampleArea.toDouble()*10.e-6)/
-         (pConfigureDlg->pTabFile->sSampleThickness.toDouble()*1.0e-3);
+    c0 = (e0*pConfigureDlg->pTabFile->sSampleArea.toDouble())/
+         (pConfigureDlg->pTabFile->sSampleThickness.toDouble());
+    c0 = c0 * 1.0e-3;
     if(pHp4284a->init()) {
         pStatusBar->showMessage("Unable to Initialize 4248a...");
         disableButtons(false);
         return;
     }
-    pHp4284a->setMode(Hp4284a::CPRP); // To be Changed !
+    pHp4284a->setMode(Hp4284a::CPD);
     pStatusBar->showMessage("Initializing measurement frequencies...");
     repaint();
-    nFrequencies = initFrequencies();
-    pHp4284a->setFrequency(frequencies.at(0));
     pHp4284a->setAmplitude(2.0);
 
     pStatusBar->showMessage("Initializing Plots...");
@@ -505,9 +519,9 @@ MainWindow::onStartMeasure() {
     writeHeader();
 
     startMeasureButton.setText("Stop");
-    configureButton.setEnabled(false);
     currentFrequencyIndex = 0;
     pHp4284a->setFrequency(frequencies.at(currentFrequencyIndex));
+    QThread::msleep(stabilizeTime);
     pHp4284a->enableQuery();
     pHp4284a->queryValues();
     pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies.at(currentFrequencyIndex)));
@@ -542,24 +556,6 @@ MainWindow::onShowTD() {
 }
 
 
-int
-MainWindow::initFrequencies() {
-    frequencies.clear();
-    double f0 = 20.0;
-    while(f0 < 1.0e6) {
-        if(pHp4284a->setFrequency(f0)) {
-            frequencies.append(pHp4284a->getFrequency());
-        }
-        f0 = 2.0 * f0;
-    }
-    f0 = 1.0e6;
-    if(pHp4284a->setFrequency(f0)) {
-        frequencies.append(pHp4284a->getFrequency());
-    }
-    return frequencies.count();
-}
-
-
 void
 MainWindow::onNew4284Measure() {
     QString sZvalues = pHp4284a->getValues();
@@ -568,28 +564,35 @@ MainWindow::onNew4284Measure() {
         double f = frequencies[currentFrequencyIndex];
         if(sListVal[2].toInt() == 0) {
             double e1 = sListVal[0].toDouble()/c0;
-            double e2 = sListVal[1].toDouble()/e1;
+            double e2 = sListVal[1].toDouble()*e1;
             pPlotE1_Om->NewPoint(1, f, e1);
             pPlotE2_Om->NewPoint(1, f, e2);
             pPlotTD_Om->NewPoint(1, f, sListVal[1].toDouble());
             pPlotE1_Om->UpdatePlot();
             pPlotE2_Om->UpdatePlot();
             pPlotTD_Om->UpdatePlot();
-            QString sData = QString("%1 %2 %3\n")
-                                    .arg(e1, 12, 'g', 6, ' ')
-                                    .arg(e2, 12, 'g', 6, ' ')
-                                    .arg(sListVal[1].toDouble(), 12, 'g', 6, ' ');
+            QString sData = QString("%1 %2 %3 %4 %5\n")
+                            .arg(f, 12, 'g', 6, ' ')
+                            .arg(e1, 12, 'g', 6, ' ')
+                            .arg(e2, 12, 'g', 6, ' ')
+                            .arg(sListVal[1].toDouble(), 12, 'g', 6, ' ')
+                            .arg(sListVal[0].toDouble(), 12, 'g', 6, ' ');
             pOutputFile->write(sData.toLocal8Bit());
             pOutputFile->flush();
+//            qDebug() << "F=" << f << "Hz"
+//                     << "Cp=" << sListVal[0].toDouble() << "Farad"
+//                     << "TanD=" << sListVal[1].toDouble();
         }
     }
     if(++currentFrequencyIndex >= nFrequencies) {
         endMeasure();
         return;
     }
-    pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
-    pHp4284a->queryValues();
     pStatusBar->showMessage(QString("Waiting data at f=%1Hz").arg(frequencies[currentFrequencyIndex]));
+    repaint();
+    pHp4284a->setFrequency(frequencies[currentFrequencyIndex]);
+    QThread::msleep(stabilizeTime);
+    pHp4284a->queryValues();
 }
 
 
@@ -626,6 +629,8 @@ MainWindow::onOpenCorrection() {
         onCorrectionDone();
         return;
     }
+    pStatusBar->showMessage("Initializing 4284a...");
+    repaint();
     if(pHp4284a->init()) {
         return;
     }
@@ -634,6 +639,8 @@ MainWindow::onOpenCorrection() {
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     if(!pHp4284a->openCorrection())
         return;
+    disableButtons(true);
+    openCorrectionButton.setEnabled(true);
     openCorrectionButton.setText("Stop");
     pStatusBar->showMessage("OPEN Correction in progress: Please wait");
 }
@@ -647,6 +654,8 @@ MainWindow::onShortCorrection() {
         onCorrectionDone();
         return;
     }
+    pStatusBar->showMessage("Initializing 4284a...");
+    repaint();
     if(pHp4284a->init()) {
         return;
     }
@@ -656,6 +665,8 @@ MainWindow::onShortCorrection() {
     QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
     if(!pHp4284a->shortCorrection())
         return;
+    disableButtons(true);
+    shortCorrectionButton.setEnabled(true);
     shortCorrectionButton.setText("Stop");
     pStatusBar->showMessage("SHORT Correction in progress: Please wait");
 }

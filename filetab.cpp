@@ -59,7 +59,6 @@ FileTab::FileTab(int iConfiguration, QWidget *parent)
     sErrorStyle += "selection-background-color: rgb(128, 128, 255);";
     sErrorStyle += "}";
 
-
     connectSignals();
     restoreSettings();
     setToolTips();
@@ -105,6 +104,7 @@ FileTab::onSampleAreaTextChanged(const QString &sValue) {
     bool bValid = dTemp > 0.0;
     if(bValid) {
         sampleAreaEdit.setStyleSheet(sNormalStyle);
+        sSampleArea = sValue;
     }
     else {
         sampleAreaEdit.setStyleSheet(sErrorStyle);
@@ -118,6 +118,7 @@ FileTab::onSampleThicknessTextChanged(const QString &sValue) {
     bool bValid = dTemp > 0.0;
     if(bValid) {
         sampleThicknessEdit.setStyleSheet(sNormalStyle);
+        sSampleThickness = sValue;
     }
     else {
         sampleThicknessEdit.setStyleSheet(sErrorStyle);
