@@ -113,7 +113,7 @@ private:
     QString          sLogDir;
     int              nFrequencies;
     int              currentFrequencyIndex;
-    const double     e0=8.854e-12;
+    const double     e0;
     double           c0;
     QVector<double>  frequencies;
     int              stabilizeTime;

@@ -55,6 +55,7 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , pShowTD_F(nullptr)
     , pStatusBar(nullptr)
     , gpibBoardID(iBoard)
+    , e0(8.854e-12)
 {
     // Init internal variables
 
@@ -474,8 +475,9 @@ MainWindow::onStartMeasure() {
     disableButtons(true);
     pStatusBar->showMessage("Initializing 4284a...");
     repaint();
-    c0 = (e0*pConfigureDlg->pTabFile->sSampleArea.toDouble()*10.e-6)/
-         (pConfigureDlg->pTabFile->sSampleThickness.toDouble()*1.0e-3);
+    c0 = (e0*pConfigureDlg->pTabFile->sSampleArea.toDouble())/
+         (pConfigureDlg->pTabFile->sSampleThickness.toDouble());
+    c0 = c0 * 1.0e-3;
     if(pHp4284a->init()) {
         pStatusBar->showMessage("Unable to Initialize 4248a...");
         disableButtons(false);
