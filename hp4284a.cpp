@@ -41,7 +41,7 @@ namespace hp4284a {
 Hp4284a::Hp4284a(int gpio, int address, QObject *parent)
     : GpibDevice(gpio, address, parent)
 {
-
+    pollInterval = 500;
 }
 
 
@@ -160,7 +160,7 @@ Hp4284a::myInit() {
     if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
         emit mustExit();
     }
-    pollTimer.start(200);
+    pollTimer.start(pollInterval);
     connect(&pollTimer, SIGNAL(timeout()),
             this, SLOT(checkNotify()));
     return true;

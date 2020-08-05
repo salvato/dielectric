@@ -84,4 +84,5 @@ protected:
     bool myInit();
 
 private:
+
 };

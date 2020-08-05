@@ -110,3 +110,15 @@ GpibDevice::onGpibCallback(int LocalUd, unsigned long LocalIbsta, unsigned long 
 void
 GpibDevice::checkNotify() {
 }
+
+
+void
+GpibDevice::setPollInterval(int interval) {
+    pollInterval = interval;
+}
+
+
+int
+GpibDevice::getPollInterval() {
+    return pollInterval;
+}

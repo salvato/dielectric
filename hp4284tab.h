@@ -23,16 +23,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QLineEdit>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QCheckBox>
 
 class hp4284Tab : public QWidget
 {
     Q_OBJECT
 public:
     explicit hp4284Tab(QWidget *parent = nullptr);
-    void restoreSettings();
-    void saveSettings();
+    void     restoreSettings();
+    void     saveSettings();
+    void     setPollInterval(int interval);
+    int      getPollInterval();
+    void     setTestVoltage(double voltage);
+    double   getTestVoltage();
+    void     enableOpenCorrection(bool bEnable);
+    bool     isOpenCorrectionEnabled();
+    void     enableShortCorrection(bool bEnable);
+    bool     isShortCorrectionEnabled();
 
-signals:
+
+public slots:
+    void onPollIntervalTextChanged(const QString &sValue);
+    void onVoltageTextChanged(const QString &sValue);
+    void onAveragesTextChanged(const QString &sValue);
 
 
 protected:
@@ -40,4 +53,13 @@ protected:
     void setToolTips();
     void connectSignals();
 
+private:
+    QLineEdit editPollInterval;
+    QLineEdit editVoltage;
+    QLineEdit editAverages;
+    QCheckBox checkOpenCorrection;
+    QCheckBox checkShortCorrection;
+    // QLineEdit styles
+    QString sNormalStyle;
+    QString sErrorStyle;
 };

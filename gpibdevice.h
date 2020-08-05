@@ -31,6 +31,8 @@ public:
     explicit      GpibDevice(int gpio, int address, QObject *parent = Q_NULLPTR);
     virtual int    init();
     virtual void   onGpibCallback(int ud, unsigned long ibsta, unsigned long iberr, long ibcntl);
+    void           setPollInterval(int interval);
+    int            getPollInterval();
 
 protected:
     uint    gpibWrite(int ud, QString sCmd);
