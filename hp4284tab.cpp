@@ -51,9 +51,9 @@ hp4284Tab::initUI() {
 
 void
 hp4284Tab::setToolTips() {
-    editPollInterval.setToolTip(QString("Enter a value [100-1000]"));
+    editPollInterval.setToolTip(QString("Enter a value [100 - 1000]"));
     editVoltage.setToolTip(QString("Enter a value (0.0 - 2.0]"));
-    editAverages.setToolTip(QString("Enter a value [1-64]"));
+    editAverages.setToolTip(QString("Enter a value [1 - 64]"));
     checkOpenCorrection.setToolTip(QString("Enable/Disable Open Correction"));
     checkShortCorrection.setToolTip(QString("Enable/Disable Short Correction"));
 }
