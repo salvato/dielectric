@@ -58,7 +58,6 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     , e0(8.854e-12)
 {
     // Init internal variables
-
     frequencies =
     {
                20,        25,        30,        40,        50,

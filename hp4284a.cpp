@@ -460,6 +460,55 @@ Hp4284a::getAmpltude() {
 }
 
 
+bool
+Hp4284a::setAverages(int nAvg) {
+    sCommand = QString("APER LONG, %1").arg(nAvg);
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+        return false;
+    }
+    return true;
+}
+
+
+int
+Hp4284a::getAverages() {
+    sCommand = "APER?\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    QStringList sResults = QStringList(gpibRead(gpibId));
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    if(sResults.count() < 2) {
+        emit mustExit();
+    }
+    return sResults.at(1).toInt();
+}
+
+
+bool
+Hp4284a::setPollInterval(int msPollInterval) {
+    if((msPollInterval >= 100) && (msPollInterval <= 1000)) {
+        pollInterval = msPollInterval;
+        if(pollTimer.isActive()) {
+            pollTimer.setInterval(pollInterval);
+            return true;
+        }
+    }
+    return false;
+}
+
+
+int
+Hp4284a::getPollInterval() {
+    return pollTimer.interval();
+}
+
+
 void
 Hp4284a::checkNotify() {
     ibrsp(gpibId, &spollByte);

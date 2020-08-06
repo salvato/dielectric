@@ -50,6 +50,10 @@ public:
     double  getFrequency();
     bool    setAmplitude(double amplitude);
     double  getAmpltude();
+    bool    setAverages(int nAvg);
+    int     getAverages();
+    bool    setPollInterval(int msPollInterval);
+    int     getPollInterval();
 
 signals:
     void correctionDone();
