@@ -76,7 +76,7 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     bPlotE1_Om = true;
     bPlotE2_Om = true;
     bPlotTD_Om = true;
-    stabilizeTime = 10000; // ms
+    stabilizeTime = 1000; // ms
 
     setSizeGripEnabled(false);// To remove the resize-handle in the lower right corner
     setFixedSize(size());// To make the size of the window fixed
