@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
 #include "filetab.h"
-#include "mainwindow.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -28,12 +27,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtDebug>
 
 
+
 FileTab::FileTab(int iConfiguration, QWidget *parent)
     : QWidget(parent)
     , sBaseDir(QDir::homePath())
     , sOutFileName("data.dat")
     , myConfiguration(iConfiguration)
 {
+    QString sInfo = QString("%1\n%2\n%3\n%4\n%5").arg(
+                            "16451B provides two electrodes:",
+                            "  Φ = 38 mm",
+                            "  Φ =  5 mm",
+                            "Materials should be greater than the",
+                            "inner Guard Φ and smaller than Φ 56mm");
+    infoEdit.appendPlainText(sInfo);
+    infoEdit.setReadOnly(true);
     outFilePathButton.setText(QString("..."));
 
     // Build the Tab layout
@@ -49,6 +57,7 @@ FileTab::FileTab(int iConfiguration, QWidget *parent)
     pLayout->addWidget(&sampleAreaEdit,                    3, 4, 1, 3);
     pLayout->addWidget(new QLabel("Sample Information"),   4, 0, 1, 7);
     pLayout->addWidget(&sampleInformationEdit,             5, 0, 4, 7);
+    pLayout->addWidget(&infoEdit,                          9, 0, 4, 7);
     setLayout(pLayout);
 
     sNormalStyle = sampleAreaEdit.styleSheet();
@@ -58,6 +67,12 @@ FileTab::FileTab(int iConfiguration, QWidget *parent)
     sErrorStyle += "background: rgb(255, 0, 0);";
     sErrorStyle += "selection-background-color: rgb(128, 128, 255);";
     sErrorStyle += "}";
+
+    sInfoStyle   = "QPlainTextEdit { ";
+    sInfoStyle  += "color: rgb(0, 0, 0);";
+    sInfoStyle  += "background: rgb(255, 255, 0);";
+    sInfoStyle  += "selection-background-color: rgb(128, 128, 255);";
+    sInfoStyle  += "}";
 
     connectSignals();
     restoreSettings();
@@ -73,6 +88,7 @@ FileTab::initUI() {
     sampleInformationEdit.setPlainText(sSampleInfo);
     outPathEdit.setText(sBaseDir);
     outFileEdit.setText(sOutFileName);
+    infoEdit.setStyleSheet(sInfoStyle);
 }
 
 

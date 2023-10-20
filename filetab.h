@@ -55,6 +55,7 @@ public:
 
 private:
     QPlainTextEdit sampleInformationEdit;
+    QPlainTextEdit infoEdit;
     QLineEdit      outPathEdit;
     QLineEdit      outFileEdit;
     QPushButton    outFilePathButton;
@@ -64,6 +65,7 @@ private:
     // QLineEdit styles
     QString sNormalStyle;
     QString sErrorStyle;
+    QString sInfoStyle;
 
     int            myConfiguration;
 };

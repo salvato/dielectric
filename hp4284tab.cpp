@@ -29,6 +29,7 @@ hp4284Tab::hp4284Tab(QWidget *parent)
 
 void
 hp4284Tab::initUI() {
+
     // Build the Tab layout
     QGridLayout* pLayout = new QGridLayout();
 
