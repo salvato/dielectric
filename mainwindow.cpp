@@ -630,7 +630,8 @@ MainWindow::onOpenCorrection() {
         return;
     }
     OpenInstructionsDialog openCorrectionDialog(this);
-    openCorrectionDialog.exec();
+    if(openCorrectionDialog.exec() != Accepted)
+        return;
     pStatusBar->showMessage("Initializing 4284a...");
     repaint();
     if(pHp4284a->init()) {

@@ -3,6 +3,8 @@
 #include <QDialog>
 #include <QObject>
 #include <QLabel>
+#include <QDialogButtonBox>
+
 
 class OpenInstructionsDialog : public QDialog
 {
@@ -17,4 +19,5 @@ protected:
 private:
     QLabel labelHeader;
     QLabel labelImage;
+    QDialogButtonBox* pButtonBox;
 };
