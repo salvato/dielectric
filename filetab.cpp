@@ -34,12 +34,12 @@ FileTab::FileTab(int iConfiguration, QWidget *parent)
     , sOutFileName("data.dat")
     , myConfiguration(iConfiguration)
 {
-    QString sInfo = QString("%1\n%2\n%3\n%4\n%5").arg(
+    QString sInfo = QString("%1\n%2\n%3\n\n%4\n%5").arg(
                             "16451B provides two electrodes:",
-                            "  Φ = 38 mm",
-                            "  Φ =  5 mm",
-                            "Materials should be greater than the",
-                            "inner Guard Φ and smaller than Φ 56mm");
+                            "  Φ = 38mm or",
+                            "  Φ = 5mm",
+                            "Materials should be much greater",
+                            "than the inner Guard diameter.");
     infoEdit.appendPlainText(sInfo);
     infoEdit.setReadOnly(true);
     outFilePathButton.setText(QString("..."));
@@ -70,7 +70,7 @@ FileTab::FileTab(int iConfiguration, QWidget *parent)
 
     sInfoStyle   = "QPlainTextEdit { ";
     sInfoStyle  += "color: rgb(0, 0, 0);";
-    sInfoStyle  += "background: rgb(255, 255, 0);";
+    sInfoStyle  += "background: rgb(127, 255, 255);";
     sInfoStyle  += "selection-background-color: rgb(128, 128, 255);";
     sInfoStyle  += "}";
 

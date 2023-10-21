@@ -168,7 +168,7 @@ hp4284Tab::onVoltageTextChanged(const QString &sValue) {
 
 
 void
-hp4284Tab::onAveragesTextChanged(const QString &sValue){
+hp4284Tab::onAveragesTextChanged(const QString &sValue) {
     int iValue = sValue.toInt();
     if(iValue > 0 && iValue < 65) {
         editAverages.setStyleSheet(sNormalStyle);

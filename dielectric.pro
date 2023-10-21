@@ -39,7 +39,8 @@ LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
 
 
 SOURCES += main.cpp \
-    hp4284tab.cpp
+    hp4284tab.cpp \
+    openinstructionsdialog.cpp
 SOURCES += gpibdevice.cpp
 SOURCES += datastream2d.cpp
 SOURCES += plotpropertiesdlg.cpp
@@ -54,7 +55,8 @@ SOURCES += plot2d.cpp
 SOURCES += mainwindow.cpp
 
 HEADERS += mainwindow.h \
-    hp4284tab.h
+    hp4284tab.h \
+    openinstructionsdialog.h
 HEADERS += gpibdevice.h
 HEADERS += datastream2d.h
 HEADERS += plotpropertiesdlg.h
@@ -71,4 +73,7 @@ DISTFILES += docs/Agilent_HP4284A.pdf \
     docs/Agilent 16451.pdf
 DISTFILES += docs/hp4284a_lcr_manual.pdf
 DISTFILES += docs/HP4284A.pdf
-DISTFILES += plot.png
+DISTFILES +=
+
+RESOURCES += \
+    resources.qrc
