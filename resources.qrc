@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>OpenCorrection.png</file>
         <file>plot.png</file>
+        <file>ShortCorrection.png</file>
     </qresource>
 </RCC>

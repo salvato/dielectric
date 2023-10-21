@@ -6,17 +6,18 @@
 #include <QDialogButtonBox>
 
 
-class OpenInstructionsDialog : public QDialog
+class CorrectionsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    OpenInstructionsDialog(QWidget *parent);
+    CorrectionsDialog(QPixmap image, QWidget *parent);
 
 protected:
     void initLayout();
 
 private:
+    QPixmap image;
     QLabel labelHeader;
     QLabel labelImage;
     QDialogButtonBox* pButtonBox;

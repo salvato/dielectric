@@ -39,8 +39,8 @@ LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
 
 
 SOURCES += main.cpp \
-    hp4284tab.cpp \
-    openinstructionsdialog.cpp
+    correctionsdialog.cpp \
+    hp4284tab.cpp
 SOURCES += gpibdevice.cpp
 SOURCES += datastream2d.cpp
 SOURCES += plotpropertiesdlg.cpp
@@ -55,8 +55,8 @@ SOURCES += plot2d.cpp
 SOURCES += mainwindow.cpp
 
 HEADERS += mainwindow.h \
-    hp4284tab.h \
-    openinstructionsdialog.h
+    correctionsdialog.h \
+    hp4284tab.h
 HEADERS += gpibdevice.h
 HEADERS += datastream2d.h
 HEADERS += plotpropertiesdlg.h

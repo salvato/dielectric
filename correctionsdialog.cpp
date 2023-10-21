@@ -1,10 +1,11 @@
-#include "openinstructionsdialog.h"
+#include "correctionsdialog.h"
 
 #include <QGridLayout>
 
 
-OpenInstructionsDialog::OpenInstructionsDialog(QWidget *parent)
+CorrectionsDialog::CorrectionsDialog(QPixmap image, QWidget *parent)
     : QDialog(parent)
+    , image(image)
 {
     initLayout();
 
@@ -16,16 +17,14 @@ OpenInstructionsDialog::OpenInstructionsDialog(QWidget *parent)
 
 
 void
-OpenInstructionsDialog::initLayout() {
+CorrectionsDialog::initLayout() {
     QString sHeader = QString("Configure the test fixture as shown in the image");
 
     // Create the Dialog Layout
     QGridLayout* pLayout = new QGridLayout();
     labelHeader.setText(sHeader);
 
-    QPixmap image(QString(":/OpenCorrection.png"));
-    image = image.scaledToWidth(640);
-    labelImage.setPixmap(QPixmap(image));
+    labelImage.setPixmap(image);
 
     pButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                       QDialogButtonBox::Cancel);

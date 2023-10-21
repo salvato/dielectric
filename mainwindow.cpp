@@ -25,7 +25,7 @@
 #include "gpibdevice.h"
 #include "hp4284a.h"
 #include "configuredlg.h"
-#include "openinstructionsdialog.h"
+#include "correctionsdialog.h"
 
 
 #include <QGridLayout>
@@ -629,7 +629,9 @@ MainWindow::onOpenCorrection() {
         onCorrectionDone();
         return;
     }
-    OpenInstructionsDialog openCorrectionDialog(this);
+    QPixmap image(QString(":/OpenCorrection.png"));
+    image = image.scaledToWidth(640);
+    CorrectionsDialog openCorrectionDialog(image, this);
     if(openCorrectionDialog.exec() != Accepted)
         return;
     pStatusBar->showMessage("Initializing 4284a...");
@@ -657,6 +659,11 @@ MainWindow::onShortCorrection() {
         onCorrectionDone();
         return;
     }
+    QPixmap image(QString(":/ShortCorrection.png"));
+    image = image.scaledToWidth(640);
+    CorrectionsDialog shortCorrectionDialog(image, this);
+    if(shortCorrectionDialog.exec() != Accepted)
+        return;
     pStatusBar->showMessage("Initializing 4284a...");
     repaint();
     if(pHp4284a->init()) {
