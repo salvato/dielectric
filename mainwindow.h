@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <QDialog>
+#include <QMainWindow>
 #include <QSettings>
 #include <QLabel>
 #include <QPushButton>
@@ -41,7 +41,7 @@ QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QStatusBar)
 
 
-class MainWindow : public QDialog
+class MainWindow : public QMainWindow//QDialog
 {
     Q_OBJECT
 

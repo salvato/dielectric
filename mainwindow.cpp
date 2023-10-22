@@ -43,7 +43,7 @@
 #include <QApplication>
 
 MainWindow::MainWindow(int iBoard, QWidget *parent)
-    : QDialog(parent)
+    : QMainWindow(parent)
     , pOutputFile(nullptr)
     , pLogFile(nullptr)
     , pHp4284a(nullptr)
@@ -79,7 +79,7 @@ MainWindow::MainWindow(int iBoard, QWidget *parent)
     bPlotTD_Om = true;
     stabilizeTime = 1000; // ms
 
-    setSizeGripEnabled(false);// To remove the resize-handle in the lower right corner
+    //setSizeGripEnabled(false);// To remove the resize-handle in the lower right corner
     setFixedSize(size());// To make the size of the window fixed
 
     // Prepare message logging
@@ -220,7 +220,9 @@ MainWindow::initLayout() {
 
     pLayout->addWidget(pPlotBox,               0, 2, 4, 1);
     pLayout->addWidget(pStatusBar,             4, 0, 1, 3);
-    setLayout(pLayout);
+    QWidget* widget = new QWidget(this);
+    widget->setLayout(pLayout);
+    setCentralWidget(widget);
 }
 
 
@@ -632,7 +634,7 @@ MainWindow::onOpenCorrection() {
     QPixmap image(QString(":/OpenCorrection.png"));
     image = image.scaledToWidth(640);
     CorrectionsDialog openCorrectionDialog(image, this);
-    if(openCorrectionDialog.exec() != Accepted)
+    if(openCorrectionDialog.exec() != QDialog::Accepted)
         return;
     pStatusBar->showMessage("Initializing 4284a...");
     repaint();
@@ -662,7 +664,7 @@ MainWindow::onShortCorrection() {
     QPixmap image(QString(":/ShortCorrection.png"));
     image = image.scaledToWidth(640);
     CorrectionsDialog shortCorrectionDialog(image, this);
-    if(shortCorrectionDialog.exec() != Accepted)
+    if(shortCorrectionDialog.exec() != QDialog::Accepted)
         return;
     pStatusBar->showMessage("Initializing 4284a...");
     repaint();
