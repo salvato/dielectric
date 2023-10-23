@@ -167,15 +167,12 @@ FileTab::saveSettings() {
 
 void
 FileTab::on_outFilePathButton_clicked() {
-    QFileDialog chooseDirDialog;
-    QDir outDir(sBaseDir);
-    chooseDirDialog.setOption(QFileDialog::ShowDirsOnly, true);
-    if(outDir.exists())
-        chooseDirDialog.setDirectory(outDir);
-    else
-        chooseDirDialog.setDirectory(QDir::homePath());
-    if(chooseDirDialog.exec() == QDialog::Accepted)
-        sBaseDir = chooseDirDialog.selectedFiles().at(0);
+    QString sNewDir;
+    sNewDir = QFileDialog::getExistingDirectory(this,
+                                                 "Data Directory",
+                                                 sBaseDir);
+    if(QDir(sNewDir).exists())
+        sBaseDir = sNewDir;
     outPathEdit.setText(sBaseDir);
 }
 
@@ -192,13 +189,12 @@ FileTab::checkFileName() {
         return false;
     }
     if(QDir(sBaseDir).exists(sOutFileName)) {
-        int iAnswer = QMessageBox::question(
-                    this,
-                    QString("File Exists"),
-                    QString("Do you want overwrite\n%1 ?").arg(sOutFileName),
-                    QMessageBox::Yes,
-                    QMessageBox::No,
-                    QMessageBox::NoButton);
+        QMessageBox msgBox;
+        msgBox.setText("File Exists");
+        msgBox.setInformativeText(QString("Do you want overwrite\n%1 ?").arg(sOutFileName));
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+        int iAnswer = msgBox.exec();
         if(iAnswer == QMessageBox::No) {
             outFileEdit.setFocus();
             return false;

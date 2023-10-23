@@ -27,8 +27,8 @@ QT += widgets
 TARGET = dielectric
 TEMPLATE = app
 
-DEFINES += QT_DEPRECATED_WARNINGS
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+#DEFINES += QT_DEPRECATED_WARNINGS
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
 INCLUDEPATH += /usr/local/include
@@ -38,9 +38,9 @@ INCLUDEPATH += /usr/local/include
 LIBS += -L"/usr/local/lib" -lgpib # To include libgpib.so from /usr/local/lib
 
 
-SOURCES += main.cpp \
-    correctionsdialog.cpp \
-    hp4284tab.cpp
+SOURCES += main.cpp
+SOURCES += correctionsdialog.cpp
+SOURCES += hp4284tab.cpp
 SOURCES += gpibdevice.cpp
 SOURCES += datastream2d.cpp
 SOURCES += plotpropertiesdlg.cpp
@@ -54,9 +54,9 @@ SOURCES += DataSetProperties.cpp
 SOURCES += plot2d.cpp
 SOURCES += mainwindow.cpp
 
-HEADERS += mainwindow.h \
-    correctionsdialog.h \
-    hp4284tab.h
+HEADERS += mainwindow.h
+HEADERS += correctionsdialog.h
+HEADERS += hp4284tab.h
 HEADERS += gpibdevice.h
 HEADERS += datastream2d.h
 HEADERS += plotpropertiesdlg.h
@@ -69,11 +69,9 @@ HEADERS += AxisLimits.h
 HEADERS += DataSetProperties.h
 HEADERS += plot2d.h
 
-DISTFILES += docs/Agilent_HP4284A.pdf \
-    docs/Agilent 16451.pdf
+DISTFILES += docs/Agilent_HP4284A.pdf
+DISTFILES += docs/Agilent 16451.pdf
 DISTFILES += docs/hp4284a_lcr_manual.pdf
 DISTFILES += docs/HP4284A.pdf
-DISTFILES +=
 
-RESOURCES += \
-    resources.qrc
+RESOURCES += resources.qrc

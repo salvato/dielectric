@@ -210,8 +210,8 @@ MainWindow::initLayout() {
     vbox->addWidget(pShowTD_F);
     pPlotBox->setLayout(vbox);
     // Status Bar
-    pStatusBar = new QStatusBar();
-    pStatusBar->setSizeGripEnabled(false);
+    pStatusBar = QMainWindow::statusBar();
+//    pStatusBar->setSizeGripEnabled(false);
     // General Layout
     pLayout->addWidget(&startMeasureButton,    0, 0, 1, 1);
     pLayout->addWidget(&openCorrectionButton,  2, 0, 1, 1);
@@ -219,7 +219,7 @@ MainWindow::initLayout() {
     //pLayout->addWidget(&loadCorrectionButton,  1, 2, 1, 1);
 
     pLayout->addWidget(pPlotBox,               0, 2, 4, 1);
-    pLayout->addWidget(pStatusBar,             4, 0, 1, 3);
+//    pLayout->addWidget(pStatusBar,             4, 0, 1, 3);
     QWidget* widget = new QWidget(this);
     widget->setLayout(pLayout);
     setCentralWidget(widget);
@@ -488,7 +488,7 @@ MainWindow::onStartMeasure() {
     pHp4284a->setMode(Hp4284a::CPD);
     pStatusBar->showMessage("Initializing measurement frequencies...");
     repaint();
-    pHp4284a->setAmplitude(2.0);
+    pHp4284a->setAmplitude(pConfigureDlg->pTab4284->getTestVoltage());
 
     pStatusBar->showMessage("Initializing Plots...");
     repaint();
