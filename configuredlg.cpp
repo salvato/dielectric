@@ -78,10 +78,11 @@ ConfigureDlg::onCancel() {
 
 void
 ConfigureDlg::onOk() {
-    if(pTab4284) pTab4284->saveSettings();
-    if(pTabFile->checkFileName()) {
-        pTabFile->saveSettings();
+    if(!pTabFile->checkFileName()) {
+        return;
     }
+    pTabFile->saveSettings();
+    if(pTab4284) pTab4284->saveSettings();
     pTabWidget->setCurrentIndex(i4284Index);
     accept();
 }

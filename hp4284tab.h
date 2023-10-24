@@ -43,9 +43,9 @@ public:
 
 
 public slots:
-    void onPollIntervalTextChanged(const QString &sValue);
-    void onVoltageTextChanged(const QString &sValue);
-    void onAveragesTextChanged(const QString &sValue);
+    void onPollIntervalTextChanged(QString sValue);
+    void onVoltageTextChanged(QString sValue);
+    void onAveragesTextChanged(QString sValue);
 
 
 protected:

@@ -54,6 +54,9 @@ public:
     int     getAverages();
     bool    setPollInterval(int msPollInterval);
     int     getPollInterval();
+    bool    setOpenCorrection(bool bOn);
+    bool    setShortCorrection(bool bOn);
+
 
 signals:
     void correctionDone();

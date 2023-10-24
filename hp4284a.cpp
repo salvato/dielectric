@@ -435,6 +435,34 @@ Hp4284a::getFrequency() {
 
 
 bool
+Hp4284a::setOpenCorrection(bool bOn) {
+    if(bOn)
+        sCommand  = "CORR:OPEN:STATE ON\r\n";
+    else
+        sCommand  = "CORR:OPEN:STATE OFF\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    return true;
+}
+
+
+bool
+Hp4284a::setShortCorrection(bool bOn) {
+    if(bOn)
+        sCommand  = "CORR:SHORT:STATE ON\r\n";
+    else
+        sCommand  = "CORR:SHORT:STATE OFF\r\n";
+    gpibWrite(gpibId, sCommand);
+    if(isGpibError(QString(Q_FUNC_INFO) + sCommand)) {
+        emit mustExit();
+    }
+    return true;
+}
+
+
+bool
 Hp4284a::setAmplitude(double amplitude) {
     sCommand =QString("VOLT %1 V\r\n").arg(amplitude);
     gpibWrite(gpibId, sCommand);

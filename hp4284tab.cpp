@@ -62,12 +62,12 @@ hp4284Tab::setToolTips() {
 
 void
 hp4284Tab::connectSignals() {
-    connect(&editPollInterval, SIGNAL(textChanged(const QString)),
-            this, SLOT(onPollIntervalTextChanged(const QString)));
-    connect(&editVoltage, SIGNAL(textChanged(const QString)),
-            this, SLOT(onVoltageTextChanged(const QString)));
-    connect(&editAverages, SIGNAL(textChanged(const QString)),
-            this, SLOT(onAveragesTextChanged(const QString)));
+    connect(&editPollInterval, SIGNAL(textChanged(QString)),
+            this, SLOT(onPollIntervalTextChanged(QString)));
+    connect(&editVoltage, SIGNAL(textChanged(QString)),
+            this, SLOT(onVoltageTextChanged(QString)));
+    connect(&editAverages, SIGNAL(textChanged(QString)),
+            this, SLOT(onAveragesTextChanged(QString)));
 }
 
 
@@ -144,7 +144,7 @@ hp4284Tab::isShortCorrectionEnabled() {
 
 
 void
-hp4284Tab::onPollIntervalTextChanged(const QString &sValue) {
+hp4284Tab::onPollIntervalTextChanged(QString sValue) {
     int iValue = sValue.toInt();
     if(iValue >= 100 && iValue <= 1000) {
         editPollInterval.setStyleSheet(sNormalStyle);
@@ -156,7 +156,7 @@ hp4284Tab::onPollIntervalTextChanged(const QString &sValue) {
 
 
 void
-hp4284Tab::onVoltageTextChanged(const QString &sValue) {
+hp4284Tab::onVoltageTextChanged(QString sValue) {
     double dValue = sValue.toDouble();
     if(dValue >= 0.1 && dValue <= 2.0) {
         editVoltage.setStyleSheet(sNormalStyle);
@@ -168,7 +168,7 @@ hp4284Tab::onVoltageTextChanged(const QString &sValue) {
 
 
 void
-hp4284Tab::onAveragesTextChanged(const QString &sValue) {
+hp4284Tab::onAveragesTextChanged(QString sValue) {
     int iValue = sValue.toInt();
     if(iValue > 0 && iValue < 65) {
         editAverages.setStyleSheet(sNormalStyle);

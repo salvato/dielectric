@@ -147,7 +147,7 @@ MainWindow::prepareLogFile() {
     if (!pLogFile->open(QIODevice::WriteOnly)) {
         QMessageBox::information(Q_NULLPTR, "Conductivity",
                                  QString("Unable to open file %1: %2.")
-                                 .arg(sLogFileName).arg(pLogFile->errorString()));
+                                 .arg(sLogFileName, pLogFile->errorString()));
         delete pLogFile;
         pLogFile = Q_NULLPTR;
     }
@@ -428,8 +428,7 @@ MainWindow::prepareOutputFile(QString sBaseDir, QString sFileName) {
         QMessageBox::critical(this,
                               "Error: Unable to Open Output File",
                               QString("%1/%2")
-                              .arg(sBaseDir)
-                              .arg(sFileName));
+                              .arg(sBaseDir, sFileName));
         pStatusBar->showMessage("Unable to Open Output file...");
         return false;
     }
@@ -489,6 +488,8 @@ MainWindow::onStartMeasure() {
     pStatusBar->showMessage("Initializing measurement frequencies...");
     repaint();
     pHp4284a->setAmplitude(pConfigureDlg->pTab4284->getTestVoltage());
+    pHp4284a->setOpenCorrection(pConfigureDlg->pTab4284->isOpenCorrectionEnabled());
+    pHp4284a->setShortCorrection(pConfigureDlg->pTab4284->isShortCorrectionEnabled());
 
     pStatusBar->showMessage("Initializing Plots...");
     repaint();
